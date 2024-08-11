@@ -1,10 +1,7 @@
 package com.springbite.authorization_server.model;
 
 import com.springbite.authorization_server.security.Role;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.util.Objects;
 
@@ -15,6 +12,7 @@ public class User {
     @Id
     @GeneratedValue
     private Integer id;
+    @Column(unique = true)
     private String username;
     private String password;
     private String firstname;
@@ -23,6 +21,9 @@ public class User {
     private Role role;
     private boolean nonLocked;
     private boolean enabled;
+
+    public User() {
+    }
 
     public User(String username,
                 String password,
