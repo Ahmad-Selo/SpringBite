@@ -1,6 +1,6 @@
 package com.springbite.authorization_server.model;
 
-import com.springbite.authorization_server.Security.Role;
+import com.springbite.authorization_server.security.Role;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
