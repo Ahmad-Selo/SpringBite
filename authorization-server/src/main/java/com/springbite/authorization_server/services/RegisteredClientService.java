@@ -1,7 +1,7 @@
 package com.springbite.authorization_server.services;
 
 import com.springbite.authorization_server.entities.RegisteredClientEntity;
-import com.springbite.authorization_server.repositories.CustomRegisteredClientRepository;
+import com.springbite.authorization_server.repositories.JpaRegisteredClientRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
@@ -13,10 +13,10 @@ import java.util.stream.Collectors;
 @Service
 public class RegisteredClientService implements RegisteredClientRepository {
 
-    private final CustomRegisteredClientRepository customRegisteredClientRepository;
+    private final JpaRegisteredClientRepository jpaRegisteredClientRepository;
 
-    public RegisteredClientService(CustomRegisteredClientRepository registeredClientRepository) {
-        this.customRegisteredClientRepository = registeredClientRepository;
+    public RegisteredClientService(JpaRegisteredClientRepository registeredClientRepository) {
+        this.jpaRegisteredClientRepository = registeredClientRepository;
     }
 
     private RegisteredClientEntity toEntity(RegisteredClient registeredClient) {
@@ -80,19 +80,19 @@ public class RegisteredClientService implements RegisteredClientRepository {
     @Override
     public void save(RegisteredClient registeredClient) {
         RegisteredClientEntity entity = toEntity(registeredClient);
-        customRegisteredClientRepository.save(entity);
+        jpaRegisteredClientRepository.save(entity);
     }
 
     @Override
     public RegisteredClient findById(String id) {
-        return customRegisteredClientRepository.findById(Integer.valueOf(id))
+        return jpaRegisteredClientRepository.findById(Integer.valueOf(id))
                 .map(this::toRegisteredClient)
                 .orElse(null);
     }
 
     @Override
     public RegisteredClient findByClientId(String clientId) {
-        return customRegisteredClientRepository.findByClientId(clientId)
+        return jpaRegisteredClientRepository.findByClientId(clientId)
                 .map(this::toRegisteredClient)
                 .orElse(null);
     }
