@@ -1,4 +1,4 @@
-package com.springbite.authorization_server.model;
+package com.springbite.authorization_server.models;
 
 import com.springbite.authorization_server.security.Role;
 import jakarta.persistence.*;

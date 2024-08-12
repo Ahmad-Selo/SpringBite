@@ -1,7 +1,7 @@
 package com.springbite.authorization_server.services;
 
-import com.springbite.authorization_server.model.SecurityUser;
-import com.springbite.authorization_server.model.User;
+import com.springbite.authorization_server.models.SecurityUser;
+import com.springbite.authorization_server.models.User;
 import com.springbite.authorization_server.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

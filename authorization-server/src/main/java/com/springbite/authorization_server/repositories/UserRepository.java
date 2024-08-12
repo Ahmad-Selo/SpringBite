@@ -1,6 +1,6 @@
 package com.springbite.authorization_server.repositories;
 
-import com.springbite.authorization_server.model.User;
+import com.springbite.authorization_server.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

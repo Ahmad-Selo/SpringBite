@@ -1,4 +1,4 @@
-package com.springbite.authorization_server.model;
+package com.springbite.authorization_server.models;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
