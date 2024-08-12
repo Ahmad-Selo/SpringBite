@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 @Component
 public class RegisteredClientMapper {
 
-    public RegisteredClientEntity toEntity(RegisteredClient registeredClient) {
+    public RegisteredClientEntity toRegisteredClientEntity(RegisteredClient registeredClient) {
         RegisteredClientEntity entity = new RegisteredClientEntity();
 
         entity.setClientId(

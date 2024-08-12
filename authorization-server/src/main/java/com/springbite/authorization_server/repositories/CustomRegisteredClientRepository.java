@@ -20,7 +20,7 @@ public class CustomRegisteredClientRepository implements RegisteredClientReposit
 
     @Override
     public void save(RegisteredClient registeredClient) {
-        RegisteredClientEntity entity = registeredClientMapper.toEntity(registeredClient);
+        RegisteredClientEntity entity = registeredClientMapper.toRegisteredClientEntity(registeredClient);
         jpaRegisteredClientRepository.save(entity);
     }
 
