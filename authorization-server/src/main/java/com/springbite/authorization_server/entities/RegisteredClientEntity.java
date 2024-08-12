@@ -11,17 +11,23 @@ public class RegisteredClientEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     private String clientId;
+
     private String clientSecret;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "client_authentication_methods")
     private Set<String> clientAuthenticationMethods;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "authorization_grant_types")
     private Set<String> authorizationGrantTypes;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "redirect_uris")
     private Set<String> redirectUris;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "scopes")
     private Set<String> scopes;
