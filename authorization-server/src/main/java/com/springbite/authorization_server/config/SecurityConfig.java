@@ -13,6 +13,7 @@ import com.springbite.authorization_server.utils.KeyPairUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -36,14 +37,6 @@ import java.util.Optional;
 
 @Configuration
 public class SecurityConfig {
-
-    private final CustomUserDetailsService customUserDetailsService;
-    private final RegisteredClientService registeredClientService;
-
-    public SecurityConfig(CustomUserDetailsService customUserDetailsService, RegisteredClientService registeredClientService) {
-        this.customUserDetailsService = customUserDetailsService;
-        this.registeredClientService = registeredClientService;
-    }
 
     @Bean
     @Order(1)
@@ -76,18 +69,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        return customUserDetailsService;
-    }
-
-    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public RegisteredClientRepository registeredClientRepository() {
-        return registeredClientService;
     }
 
     @Bean
