@@ -1,8 +1,6 @@
 package com.springbite.authorization_server.entities;
 
 import jakarta.persistence.*;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 
 import java.util.Set;
 
@@ -16,12 +14,16 @@ public class RegisteredClientEntity {
     private String clientId;
     private String clientSecret;
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<ClientAuthenticationMethod> clientAuthenticationMethods;
+    @CollectionTable(name = "client_authentication_methods")
+    private Set<String> clientAuthenticationMethods;
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<AuthorizationGrantType> authorizationGrantTypes;
+    @CollectionTable(name = "authorization_grant_types")
+    private Set<String> authorizationGrantTypes;
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "redirect_uris")
     private Set<String> redirectUris;
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "scopes")
     private Set<String> scopes;
 
     public RegisteredClientEntity() {
@@ -29,8 +31,8 @@ public class RegisteredClientEntity {
 
     public RegisteredClientEntity(String clientId,
                                   String clientSecret,
-                                  Set<ClientAuthenticationMethod> clientAuthenticationMethods,
-                                  Set<AuthorizationGrantType> authorizationGrantTypes,
+                                  Set<String> clientAuthenticationMethods,
+                                  Set<String> authorizationGrantTypes,
                                   Set<String> redirectUris,
                                   Set<String> scopes
     ) {
@@ -66,19 +68,19 @@ public class RegisteredClientEntity {
         this.clientSecret = clientSecret;
     }
 
-    public Set<ClientAuthenticationMethod> getClientAuthenticationMethods() {
+    public Set<String> getClientAuthenticationMethods() {
         return clientAuthenticationMethods;
     }
 
-    public void setClientAuthenticationMethods(Set<ClientAuthenticationMethod> clientAuthenticationMethods) {
+    public void setClientAuthenticationMethods(Set<String> clientAuthenticationMethods) {
         this.clientAuthenticationMethods = clientAuthenticationMethods;
     }
 
-    public Set<AuthorizationGrantType> getAuthorizationGrantTypes() {
+    public Set<String> getAuthorizationGrantTypes() {
         return authorizationGrantTypes;
     }
 
-    public void setAuthorizationGrantTypes(Set<AuthorizationGrantType> authorizationGrantTypes) {
+    public void setAuthorizationGrantTypes(Set<String> authorizationGrantTypes) {
         this.authorizationGrantTypes = authorizationGrantTypes;
     }
 

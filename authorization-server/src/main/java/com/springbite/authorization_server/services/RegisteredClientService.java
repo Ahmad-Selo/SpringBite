@@ -2,9 +2,13 @@ package com.springbite.authorization_server.services;
 
 import com.springbite.authorization_server.entities.RegisteredClientEntity;
 import com.springbite.authorization_server.repositories.CustomRegisteredClientRepository;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.stream.Collectors;
 
 @Service
 public class RegisteredClientService implements RegisteredClientRepository {
@@ -17,16 +21,28 @@ public class RegisteredClientService implements RegisteredClientRepository {
 
     private RegisteredClientEntity toEntity(RegisteredClient registeredClient) {
         RegisteredClientEntity entity = new RegisteredClientEntity();
+
         entity.setClientId(
                 registeredClient.getClientId());
+
         entity.setClientSecret(
                 registeredClient.getClientSecret());
+
         entity.setClientAuthenticationMethods(
-                registeredClient.getClientAuthenticationMethods());
+                registeredClient.getClientAuthenticationMethods()
+                        .stream()
+                        .map(ClientAuthenticationMethod::getValue)
+                        .collect(Collectors.toSet()));
+
         entity.setAuthorizationGrantTypes(
-                registeredClient.getAuthorizationGrantTypes());
+                registeredClient.getAuthorizationGrantTypes()
+                        .stream()
+                        .map(AuthorizationGrantType::getValue)
+                        .collect(Collectors.toSet()));
+
         entity.setRedirectUris(
                 registeredClient.getRedirectUris());
+
         entity.setScopes(
                 registeredClient.getScopes());
 
@@ -39,14 +55,25 @@ public class RegisteredClientService implements RegisteredClientRepository {
                         entity.getClientId())
                 .clientSecret(
                         entity.getClientSecret())
+
                 .clientAuthenticationMethods(
-                        authMethods -> authMethods.addAll(entity.getClientAuthenticationMethods()))
+                        authMethods -> authMethods.addAll(entity.getClientAuthenticationMethods()
+                                .stream()
+                                .map(ClientAuthenticationMethod::new)
+                                .collect(Collectors.toSet())))
+
                 .authorizationGrantTypes(
-                        grantTypes -> grantTypes.addAll(entity.getAuthorizationGrantTypes()))
+                        grantTypes -> grantTypes.addAll(entity.getAuthorizationGrantTypes()
+                                .stream()
+                                .map(AuthorizationGrantType::new)
+                                .collect(Collectors.toSet())))
+
                 .redirectUris(
                         redirectUris -> redirectUris.addAll(entity.getRedirectUris()))
+
                 .scopes(
                         scopes -> scopes.addAll(entity.getScopes()))
+
                 .build();
     }
 
