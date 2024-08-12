@@ -1,0 +1,42 @@
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Ignore IntelliJ IDEA's project-specific settings
+.idea/*
+
+# But include the following specific files if necessary:
+!.idea/codeStyles/*
+!.idea/inspectionProfiles/*
+!.idea/libraries/*
+!.idea/modules.xml
+!.idea/vcs.xml
+!.idea/workspace.xml
+!.idea/.name
+
+# Ignore the .idea/ directory itself
+.idea/
+
+# If you're using Maven or Gradle, ignore their build output directories
+/target/
+/out/
+/build/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore logs, temp files, and generated files
+*.log
+*.tmp
+*.swp
+*.swo
+*.bak
+*.orig
+
+# Ignore dependency directories
+/node_modules/
+/dist/
+/.venv/
