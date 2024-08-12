@@ -12,15 +12,23 @@ public class User {
     @Id
     @GeneratedValue
     private Integer id;
+
     @Column(unique = true)
     private String username;
+
     private String password;
+
     private String firstname;
+
     private String lastname;
+
     @Column(unique = true)
     private String phoneNumber;
+
     private Role role;
+
     private boolean nonLocked;
+
     private boolean enabled;
 
     public User() {
