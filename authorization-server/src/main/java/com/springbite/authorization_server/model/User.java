@@ -17,6 +17,7 @@ public class User {
     private String password;
     private String firstname;
     private String lastname;
+    @Column(unique = true)
     private String phoneNumber;
     private Role role;
     private boolean nonLocked;
@@ -121,12 +122,12 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(username, user.username) && Objects.equals(password, user.password) && Objects.equals(firstname, user.firstname) && Objects.equals(lastname, user.lastname) && Objects.equals(phoneNumber, user.phoneNumber) && Objects.equals(role, user.role);
+        return nonLocked == user.nonLocked && enabled == user.enabled && Objects.equals(id, user.id) && Objects.equals(username, user.username) && Objects.equals(password, user.password) && Objects.equals(firstname, user.firstname) && Objects.equals(lastname, user.lastname) && Objects.equals(phoneNumber, user.phoneNumber) && role == user.role;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, username, password, firstname, lastname, phoneNumber, role);
+        return Objects.hash(id, username, password, firstname, lastname, phoneNumber, role, nonLocked, enabled);
     }
 
     @Override
@@ -138,7 +139,9 @@ public class User {
                 ", firstname='" + firstname + '\'' +
                 ", lastname='" + lastname + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
-                ", role='" + role + '\'' +
+                ", role=" + role +
+                ", nonLocked=" + nonLocked +
+                ", enabled=" + enabled +
                 '}';
     }
 }
