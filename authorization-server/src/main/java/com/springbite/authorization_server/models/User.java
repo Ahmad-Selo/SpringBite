@@ -25,6 +25,7 @@ public class User {
     @Column(unique = true)
     private String phoneNumber;
 
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     private boolean nonLocked;
