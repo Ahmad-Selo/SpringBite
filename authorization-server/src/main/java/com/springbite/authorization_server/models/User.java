@@ -126,6 +126,10 @@ public class User {
         this.enabled = enabled;
     }
 
+    public String getFullName() {
+        return firstname + " " + lastname;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
