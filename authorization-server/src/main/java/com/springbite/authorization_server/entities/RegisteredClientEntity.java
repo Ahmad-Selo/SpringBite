@@ -2,6 +2,7 @@ package com.springbite.authorization_server.entities;
 
 import jakarta.persistence.*;
 
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -104,5 +105,18 @@ public class RegisteredClientEntity {
 
     public void setScopes(Set<String> scopes) {
         this.scopes = scopes;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RegisteredClientEntity that = (RegisteredClientEntity) o;
+        return Objects.equals(id, that.id) && Objects.equals(clientId, that.clientId) && Objects.equals(clientSecret, that.clientSecret) && Objects.equals(clientAuthenticationMethods, that.clientAuthenticationMethods) && Objects.equals(authorizationGrantTypes, that.authorizationGrantTypes) && Objects.equals(redirectUris, that.redirectUris) && Objects.equals(scopes, that.scopes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, clientId, clientSecret, clientAuthenticationMethods, authorizationGrantTypes, redirectUris, scopes);
     }
 }
