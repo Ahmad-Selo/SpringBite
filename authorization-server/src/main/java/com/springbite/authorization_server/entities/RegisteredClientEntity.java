@@ -123,6 +123,14 @@ public class RegisteredClientEntity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, clientId, clientSecret, clientAuthenticationMethods, authorizationGrantTypes, redirectUris, scopes);
+        return Objects.hash(
+                id,
+                clientId,
+                clientSecret,
+                clientAuthenticationMethods,
+                authorizationGrantTypes,
+                redirectUris,
+                scopes
+        );
     }
 }
