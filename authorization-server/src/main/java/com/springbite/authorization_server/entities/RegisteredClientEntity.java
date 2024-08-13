@@ -112,7 +112,13 @@ public class RegisteredClientEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RegisteredClientEntity that = (RegisteredClientEntity) o;
-        return Objects.equals(id, that.id) && Objects.equals(clientId, that.clientId) && Objects.equals(clientSecret, that.clientSecret) && Objects.equals(clientAuthenticationMethods, that.clientAuthenticationMethods) && Objects.equals(authorizationGrantTypes, that.authorizationGrantTypes) && Objects.equals(redirectUris, that.redirectUris) && Objects.equals(scopes, that.scopes);
+        return Objects.equals(id, that.id) &&
+                Objects.equals(clientId, that.clientId) &&
+                Objects.equals(clientSecret, that.clientSecret) &&
+                Objects.equals(clientAuthenticationMethods, that.clientAuthenticationMethods) &&
+                Objects.equals(authorizationGrantTypes, that.authorizationGrantTypes) &&
+                Objects.equals(redirectUris, that.redirectUris) &&
+                Objects.equals(scopes, that.scopes);
     }
 
     @Override
