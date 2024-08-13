@@ -1,10 +1,10 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/springbite_authorization-server
+    url: jdbc:postgresql://localhost:5432/springbite_authorization_db
     username: postgres
     password: database.postgreSQL00?
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     database: postgresql
