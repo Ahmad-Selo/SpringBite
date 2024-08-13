@@ -50,7 +50,7 @@ public class SecurityConfig {
 
         http.exceptionHandling(
                 e -> e.authenticationEntryPoint(
-                        new LoginUrlAuthenticationEntryPoint("/login")
+                        new LoginUrlAuthenticationEntryPoint("accounts/login")
                 )
         );
 
