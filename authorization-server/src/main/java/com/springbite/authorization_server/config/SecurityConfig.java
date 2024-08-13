@@ -77,7 +77,7 @@ public class SecurityConfig {
     @Bean
     @Transactional
     public JWKSource<SecurityContext> jwkSource(KeyPairRepository keyPairRepository) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        int id = 1;
+        long id = 1;
 
         Optional<KeyPairEntity> keyPairEntityOptional = keyPairRepository.findById(id);
 

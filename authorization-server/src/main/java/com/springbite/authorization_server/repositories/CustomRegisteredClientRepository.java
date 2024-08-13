@@ -26,7 +26,7 @@ public class CustomRegisteredClientRepository implements RegisteredClientReposit
 
     @Override
     public RegisteredClient findById(String id) {
-        return jpaRegisteredClientRepository.findById(Integer.valueOf(id))
+        return jpaRegisteredClientRepository.findById(Long.valueOf(id))
                 .map(registeredClientMapper::toRegisteredClient)
                 .orElse(null);
     }

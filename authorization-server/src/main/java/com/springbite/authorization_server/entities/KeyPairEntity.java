@@ -12,7 +12,7 @@ public class KeyPairEntity {
 
     @Id
     @GeneratedValue
-    private Integer id;
+    private Long id;
 
     @Lob
     private String publicKey;
@@ -28,11 +28,11 @@ public class KeyPairEntity {
         this.privateKey = privateKey;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
