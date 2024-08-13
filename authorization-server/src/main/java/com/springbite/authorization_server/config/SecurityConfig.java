@@ -60,7 +60,7 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.httpBasic(Customizer.withDefaults());
+        http.formLogin(Customizer.withDefaults());
 
         http.authorizeHttpRequests(
                 c -> c.anyRequest().authenticated()
