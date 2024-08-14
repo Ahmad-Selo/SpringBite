@@ -13,6 +13,7 @@ public class RegisteredClientEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String clientId;
 
     private String clientSecret;
