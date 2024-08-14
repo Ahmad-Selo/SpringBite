@@ -4,10 +4,13 @@ import com.springbite.client_server.mappers.ClientRegistrationMapper;
 import com.springbite.client_server.repositories.CustomClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
-@Service
-public class ClientRegistrationRepositoryImpl implements ClientRegistrationRepository {
+import java.util.Iterator;
+
+@Repository
+public class ClientRegistrationRepositoryImpl
+        implements ClientRegistrationRepository, Iterable<ClientRegistration> {
 
     private final CustomClientRegistrationRepository customClientRegistrationRepository;
 
@@ -23,5 +26,13 @@ public class ClientRegistrationRepositoryImpl implements ClientRegistrationRepos
         return customClientRegistrationRepository.findByRegistrationId(registrationId)
                 .map(clientRegistrationMapper::toClientRegistration)
                 .orElse(null);
+    }
+
+    @Override
+    public Iterator<ClientRegistration> iterator() {
+        return customClientRegistrationRepository.findAll()
+                .stream()
+                .map(clientRegistrationMapper::toClientRegistration)
+                .iterator();
     }
 }
