@@ -76,7 +76,7 @@ class RegisteredClientMapperTest {
 
     @Test
     void RegisteredClientEntityToRegisteredClientTest() {
-        RegisteredClientEntity registeredClientEntity =
+        RegisteredClientEntity entity =
                 new RegisteredClientEntity(
                         "client",
                         "secret",
@@ -87,14 +87,14 @@ class RegisteredClientMapperTest {
                 );
 
         RegisteredClient registeredClient = registeredClientMapper
-                .toRegisteredClient(registeredClientEntity);
+                .toRegisteredClient(entity);
 
-        assertEquals(registeredClientEntity.getClientId(), registeredClient.getClientId());
+        assertEquals(entity.getClientId(), registeredClient.getClientId());
 
-        assertEquals(registeredClientEntity.getClientSecret(), registeredClient.getClientSecret());
+        assertEquals(entity.getClientSecret(), registeredClient.getClientSecret());
 
         assertEquals(
-                registeredClientEntity.getClientAuthenticationMethods(),
+                entity.getClientAuthenticationMethods(),
                 registeredClient.getClientAuthenticationMethods()
                         .stream()
                         .map(ClientAuthenticationMethod::getValue)
@@ -102,7 +102,7 @@ class RegisteredClientMapperTest {
         );
 
         assertEquals(
-                registeredClientEntity.getAuthorizationGrantTypes(),
+                entity.getAuthorizationGrantTypes(),
                 registeredClient.getAuthorizationGrantTypes()
                         .stream()
                         .map(AuthorizationGrantType::getValue)
@@ -110,12 +110,12 @@ class RegisteredClientMapperTest {
         );
 
         assertEquals(
-                registeredClientEntity.getRedirectUris(),
+                entity.getRedirectUris(),
                 registeredClient.getRedirectUris()
         );
 
         assertEquals(
-                registeredClientEntity.getScopes(),
+                entity.getScopes(),
                 registeredClient.getScopes()
         );
 
