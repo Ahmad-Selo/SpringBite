@@ -40,19 +40,19 @@ class RegisteredClientMapperTest {
                         .scope(OidcScopes.OPENID)
                         .build();
 
-        RegisteredClientEntity registeredClientEntity = registeredClientMapper
+        RegisteredClientEntity entity = registeredClientMapper
                 .toRegisteredClientEntity(registeredClient);
 
-        assertEquals(registeredClient.getClientId(), registeredClientEntity.getClientId());
+        assertEquals(registeredClient.getClientId(), entity.getClientId());
 
-        assertEquals(registeredClient.getClientSecret(), registeredClientEntity.getClientSecret());
+        assertEquals(registeredClient.getClientSecret(), entity.getClientSecret());
 
         assertEquals(
                 registeredClient.getClientAuthenticationMethods()
                         .stream()
                         .map(ClientAuthenticationMethod::getValue)
                         .collect(Collectors.toSet()),
-                registeredClientEntity.getClientAuthenticationMethods()
+                entity.getClientAuthenticationMethods()
         );
 
         assertEquals(
@@ -60,17 +60,17 @@ class RegisteredClientMapperTest {
                         .stream()
                         .map(AuthorizationGrantType::getValue)
                         .collect(Collectors.toSet()),
-                registeredClientEntity.getAuthorizationGrantTypes()
+                entity.getAuthorizationGrantTypes()
         );
 
         assertEquals(
                 registeredClient.getRedirectUris(),
-                registeredClientEntity.getRedirectUris()
+                entity.getRedirectUris()
         );
 
         assertEquals(
                 registeredClient.getScopes(),
-                registeredClientEntity.getScopes()
+                entity.getScopes()
         );
     }
 
