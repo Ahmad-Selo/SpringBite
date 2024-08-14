@@ -32,17 +32,37 @@ public class ClientRegistrationEntity {
 
     private String clientName;
 
+    private String authorizationUri;
+
+    private String tokenUri;
+
+    private String jwkSetUri;
+
+    private String issuerUri;
+
+    private String userInfoUri;
+
+    private String userNameAttributeName;
+
     public ClientRegistrationEntity() {
     }
 
-    public ClientRegistrationEntity(String registrationId,
-                                    String clientId,
-                                    String clientSecret,
-                                    String clientAuthenticationMethod,
-                                    String authorizationGrantType,
-                                    String redirectUri,
-                                    Set<String> scopes,
-                                    String clientName) {
+
+    public ClientRegistrationEntity(
+            String registrationId,
+            String clientId,
+            String clientSecret,
+            String clientAuthenticationMethod,
+            String authorizationGrantType,
+            String redirectUri,
+            Set<String> scopes,
+            String clientName,
+            String authorizationUri,
+            String tokenUri,
+            String jwkSetUri,
+            String issuerUri,
+            String userInfoUri,
+            String userNameAttributeName) {
         this.registrationId = registrationId;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
@@ -51,6 +71,12 @@ public class ClientRegistrationEntity {
         this.redirectUri = redirectUri;
         this.scopes = scopes;
         this.clientName = clientName;
+        this.authorizationUri = authorizationUri;
+        this.tokenUri = tokenUri;
+        this.jwkSetUri = jwkSetUri;
+        this.issuerUri = issuerUri;
+        this.userInfoUri = userInfoUri;
+        this.userNameAttributeName = userNameAttributeName;
     }
 
     public Long getId() {
@@ -125,20 +151,74 @@ public class ClientRegistrationEntity {
         this.clientName = clientName;
     }
 
+    public String getAuthorizationUri() {
+        return authorizationUri;
+    }
+
+    public void setAuthorizationUri(String authorizationUri) {
+        this.authorizationUri = authorizationUri;
+    }
+
+    public String getTokenUri() {
+        return tokenUri;
+    }
+
+    public void setTokenUri(String tokenUri) {
+        this.tokenUri = tokenUri;
+    }
+
+    public String getJwkSetUri() {
+        return jwkSetUri;
+    }
+
+    public void setJwkSetUri(String jwkSetUri) {
+        this.jwkSetUri = jwkSetUri;
+    }
+
+    public String getIssuerUri() {
+        return issuerUri;
+    }
+
+    public void setIssuerUri(String issuerUri) {
+        this.issuerUri = issuerUri;
+    }
+
+    public String getUserInfoUri() {
+        return userInfoUri;
+    }
+
+    public void setUserInfoUri(String userInfoUri) {
+        this.userInfoUri = userInfoUri;
+    }
+
+    public String getUserNameAttributeName() {
+        return userNameAttributeName;
+    }
+
+    public void setUserNameAttributeName(String userNameAttributeName) {
+        this.userNameAttributeName = userNameAttributeName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ClientRegistrationEntity that = (ClientRegistrationEntity) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(registrationId, that.registrationId) &&
-                Objects.equals(clientId, that.clientId) &&
-                Objects.equals(clientSecret, that.clientSecret) &&
-                Objects.equals(clientAuthenticationMethod, that.clientAuthenticationMethod) &&
-                Objects.equals(authorizationGrantType, that.authorizationGrantType) &&
-                Objects.equals(redirectUri, that.redirectUri) &&
-                Objects.equals(scopes, that.scopes) &&
-                Objects.equals(clientName, that.clientName);
+        ClientRegistrationEntity entity = (ClientRegistrationEntity) o;
+        return Objects.equals(id, entity.id) &&
+                Objects.equals(registrationId, entity.registrationId) &&
+                Objects.equals(clientId, entity.clientId) &&
+                Objects.equals(clientSecret, entity.clientSecret) &&
+                Objects.equals(clientAuthenticationMethod, entity.clientAuthenticationMethod) &&
+                Objects.equals(authorizationGrantType, entity.authorizationGrantType) &&
+                Objects.equals(redirectUri, entity.redirectUri) &&
+                Objects.equals(scopes, entity.scopes) &&
+                Objects.equals(clientName, entity.clientName) &&
+                Objects.equals(authorizationUri, entity.authorizationUri) &&
+                Objects.equals(tokenUri, entity.tokenUri) &&
+                Objects.equals(jwkSetUri, entity.jwkSetUri) &&
+                Objects.equals(issuerUri, entity.issuerUri) &&
+                Objects.equals(userInfoUri, entity.userInfoUri) &&
+                Objects.equals(userNameAttributeName, entity.userNameAttributeName);
     }
 
     @Override
@@ -152,7 +232,12 @@ public class ClientRegistrationEntity {
                 authorizationGrantType,
                 redirectUri,
                 scopes,
-                clientName
-        );
+                clientName,
+                authorizationUri,
+                tokenUri,
+                jwkSetUri,
+                issuerUri,
+                userInfoUri,
+                userNameAttributeName);
     }
 }

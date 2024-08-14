@@ -22,6 +22,12 @@ public class ClientRegistrationMapper {
                 .redirectUri(entity.getRedirectUri())
                 .scope(entity.getScopes())
                 .clientName(entity.getClientName())
+                .authorizationUri(entity.getAuthorizationUri())
+                .tokenUri(entity.getTokenUri())
+                .jwkSetUri(entity.getJwkSetUri())
+                .issuerUri(entity.getIssuerUri())
+                .userInfoUri(entity.getUserInfoUri())
+                .userNameAttributeName(entity.getUserNameAttributeName())
                 .build();
     }
 
