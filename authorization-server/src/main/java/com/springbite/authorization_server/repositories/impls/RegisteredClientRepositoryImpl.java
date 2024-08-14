@@ -5,9 +5,9 @@ import com.springbite.authorization_server.mappers.RegisteredClientMapper;
 import com.springbite.authorization_server.repositories.CustomRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
-@Service
+@Repository
 public class RegisteredClientRepositoryImpl implements RegisteredClientRepository {
 
     private final CustomRegisteredClientRepository customRegisteredClientRepository;
