@@ -1,6 +1,4 @@
 spring:
-  application:
-    name=resource-server
   datasource:
     url: jdbc:postgresql://localhost:5432/springbite_resource_db
     username: postgres
