@@ -6,9 +6,12 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.springbite.authorization_server.entities.KeyPairEntity;
+import com.springbite.authorization_server.filters.ClientAuthFilter;
 import com.springbite.authorization_server.repositories.KeyPairRepository;
+import com.springbite.authorization_server.services.JwtService;
 import com.springbite.authorization_server.utils.KeyPairUtil;
 import jakarta.transaction.Transactional;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -19,6 +22,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
@@ -26,6 +30,7 @@ import org.springframework.security.oauth2.server.authorization.token.JwtEncodin
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -34,6 +39,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -59,11 +65,24 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            RegisteredClientRepository registeredClientRepository)
+            throws Exception {
         http.formLogin(Customizer.withDefaults());
 
         http.authorizeHttpRequests(
-                c -> c.anyRequest().authenticated()
+                c -> c.requestMatchers("/login", "/signup/**", "/auth/**").permitAll()
+                        .anyRequest().authenticated()
+        );
+
+        http.addFilterBefore(
+                new ClientAuthFilter(registeredClientRepository, passwordEncoder()),
+                UsernamePasswordAuthenticationFilter.class
+        );
+
+        http.csrf(
+                c -> c.ignoringRequestMatchers("/login", "/signup/**", "/auth/**")
         );
 
         return http.build();
@@ -76,7 +95,7 @@ public class SecurityConfig {
 
     @Bean
     @Transactional
-    public JWKSource<SecurityContext> jwkSource(KeyPairRepository keyPairRepository) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public RSAKey rsaKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
         long id = 1;
 
         Optional<KeyPairEntity> keyPairEntityOptional = keyPairRepository.findById(id);
@@ -112,6 +131,12 @@ public class SecurityConfig {
 
             keyPairRepository.save(keyPairEntity);
         }
+        return rsaKey;
+    }
+
+    @Bean
+    public JWKSource<SecurityContext> jwkSource() throws NoSuchAlgorithmException, InvalidKeySpecException {
+        RSAKey rsaKey = rsaKey();
 
         JWKSet jwkSet = new JWKSet(rsaKey);
         return new ImmutableJWKSet<>(jwkSet);
