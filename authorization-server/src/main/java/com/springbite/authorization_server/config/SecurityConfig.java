@@ -43,7 +43,38 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Configuration
+@ConfigurationProperties(prefix = "trusted")
 public class SecurityConfig {
+
+    private final KeyPairRepository keyPairRepository;
+
+    private Set<String> issuers;
+    private Set<String> clients;
+
+    public SecurityConfig(KeyPairRepository keyPairRepository) {
+        this.keyPairRepository = keyPairRepository;
+    }
+
+    public Set<String> getIssuers() {
+        return issuers;
+    }
+
+    public void setIssuers(Set<String> issuers) {
+        this.issuers = issuers;
+    }
+
+    public Set<String> getClients() {
+        return clients;
+    }
+
+    public void setClients(Set<String> clients) {
+        this.clients = clients;
+    }
+
+    @Bean
+    public JwtService jwtService() {
+        return new JwtService(issuers, clients);
+    }
 
     @Bean
     @Order(1)
