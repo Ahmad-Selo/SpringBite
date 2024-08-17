@@ -1,10 +1,6 @@
 package com.springbite.authorization_server;
 
-import com.springbite.authorization_server.exceptions.UserAlreadyExistsException;
-import com.springbite.authorization_server.models.User;
-import com.springbite.authorization_server.security.Role;
 import com.springbite.authorization_server.services.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,24 +22,6 @@ class AuthorizationServerApplicationTests {
 
     @Autowired
     private UserService userService;
-
-    @BeforeEach
-    void setUp() {
-        User user = new User();
-        user.setUsername("ahmad_selo");
-        user.setPassword("password");
-        user.setFirstname("Ahmad");
-        user.setLastname("Selo");
-        user.setRole(Role.ROLE_ADMIN);
-        user.setPhoneNumber("0981227881");
-        user.setEnabled(true);
-        user.setNonLocked(true);
-        try {
-            userService.signup(user);
-        } catch (UserAlreadyExistsException e) {
-
-        }
-    }
 
     @Test
     void AuthenticatingWithValidUser() throws Exception {
