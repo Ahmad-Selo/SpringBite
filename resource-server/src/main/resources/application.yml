@@ -1,3 +1,6 @@
+server:
+  port: 9090
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/springbite_resource_db
@@ -8,3 +11,5 @@ spring:
     hibernate:
       ddl-auto: update
     database: postgresql
+
+keySetUri: http://10.66.66.9:8080/oauth2/jwks
