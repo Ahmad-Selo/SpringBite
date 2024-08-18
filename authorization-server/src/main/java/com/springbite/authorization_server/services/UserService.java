@@ -169,7 +169,7 @@ public class UserService {
                         "family_name");
 
             } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
                         .singletonMap("error", e.getMessage()));
             }
 
@@ -190,7 +190,7 @@ public class UserService {
                 httpStatus = HttpStatus.CREATED;
             }
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
                     .singletonMap("error", "Invalid provider"));
         }
 
