@@ -1,7 +1,5 @@
 package com.springbite.authorization_server.controllers;
 
-import com.nimbusds.jose.JOSEException;
-import com.springbite.authorization_server.exceptions.UserAlreadyExistsException;
 import com.springbite.authorization_server.models.dtos.UserDto;
 import com.springbite.authorization_server.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 @RestController
 public class UserController {
@@ -27,11 +26,7 @@ public class UserController {
     public ResponseEntity<?> signup(
             @Valid @RequestBody UserDto dto,
             HttpServletRequest request) {
-        try {
-            return userService.signup(dto, request);
-        } catch (UserAlreadyExistsException | JOSEException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+        return userService.signup(dto, request);
     }
 
     @PostMapping("/auth/{provider}")
@@ -41,11 +36,7 @@ public class UserController {
             @NonNull @RequestParam("client_id") String clientId,
             @NonNull @RequestParam("scope") String scope,
             HttpServletRequest request) {
-        try {
-            return userService.auth(dto, provider, clientId, scope, request);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        return userService.auth(dto, provider, clientId, scope, request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -53,12 +44,16 @@ public class UserController {
             MethodArgumentNotValidException exception
     ) {
         var errors = new ArrayList<>();
+
         exception.getBindingResult().getAllErrors()
                 .forEach(error -> {
                     var errorMessage = error.getDefaultMessage();
                     errors.add(errorMessage);
                 });
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        var errorMessage = (errors.size() > 1 ? "errors" : "error");
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                .singletonMap(errorMessage, errors));
     }
 }

@@ -2,9 +2,6 @@ package com.springbite.authorization_server.services;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
-import com.springbite.authorization_server.exceptions.InvalidProvider;
-import com.springbite.authorization_server.exceptions.MissingBearerToken;
-import com.springbite.authorization_server.exceptions.UserAlreadyExistsException;
 import com.springbite.authorization_server.mappers.UserMapper;
 import com.springbite.authorization_server.models.SecurityUser;
 import com.springbite.authorization_server.models.User;
@@ -20,7 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -67,8 +63,16 @@ public class UserService {
         this.rsaKey = rsaKey;
     }
 
-    public boolean isUserAlreadyExists(String username) {
+    private boolean isUsernameAlreadyExists(String username) {
         return userRepository.findByUsername(username).isPresent();
+    }
+
+    private boolean isPhoneNumberAlreadyExists(String phoneNumber) {
+        return userRepository.findByPhoneNumber(phoneNumber).isPresent();
+    }
+
+    public boolean isUserAlreadyExists(String username, String phoneNumber) {
+        return isUsernameAlreadyExists(username) || isPhoneNumberAlreadyExists(phoneNumber);
     }
 
     private void authenticateUser(SecurityUser securityUser) {
@@ -81,14 +85,10 @@ public class UserService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    public User saveUser(User user) {
-        return userRepository.save(user);
-    }
-
     public ResponseEntity<?> signup(
             UserDto dto,
             HttpServletRequest request
-    ) throws UserAlreadyExistsException, JOSEException {
+    ) {
         String authHeader = request.getHeader("Authorization");
 
         String base64Credentials = authHeader.substring(6);
@@ -100,24 +100,31 @@ public class UserService {
 
         RegisteredClient registeredClient = registeredClientRepository.findByClientId(clientId);
 
-        User user = userMapper.toUser(dto);
-
-        if (isUserAlreadyExists(user.getUsername())) {
-            throw new UserAlreadyExistsException("username already exists");
+        if (isUserAlreadyExists(dto.getUsername(), dto.getPhoneNumber())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Collections
+                    .singletonMap("error", "username already exists"));
         }
+
+        User user = userMapper.toUser(dto);
 
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
-        saveUser(user);
+        userRepository.save(user);
 
-        Map<String, Object> body = generateResponseBody(
-                userMapper.userToSecurityUser(user),
-                clientId,
-                registeredClient.getScopes(),
-                request
-        );
+        Map<String, Object> body;
+        try {
+            body = generateResponseBody(
+                    userMapper.userToSecurityUser(user),
+                    clientId,
+                    registeredClient.getScopes(),
+                    request
+            );
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(body);
+            return ResponseEntity.status(HttpStatus.CREATED).body(body);
+        } catch (JOSEException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", e.getMessage()));
+        }
     }
 
     public ResponseEntity<?> auth(
@@ -126,10 +133,11 @@ public class UserService {
             String clientId,
             String scope,
             HttpServletRequest request
-    ) throws Exception {
+    ) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new MissingBearerToken("Bearer token is missing");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", "Bearer token is missing"));
         }
 
         String token = authHeader.substring(7);
@@ -161,10 +169,11 @@ public class UserService {
                         "family_name");
 
             } catch (Exception e) {
-                throw new InvalidBearerTokenException(e.getMessage(), e);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                        .singletonMap("error", e.getMessage()));
             }
 
-            if (isUserAlreadyExists(dto.getUsername())) {
+            if (isUserAlreadyExists(dto.getUsername(), dto.getPhoneNumber())) {
                 user = userRepository.findByUsername(username).orElse(null);
                 httpStatus = HttpStatus.OK;
             } else {
@@ -173,23 +182,32 @@ public class UserService {
                 user.setFirstname(firstname);
                 user.setLastname(lastname);
                 if (user.getPassword() == null) {
-                    user.setPassword(passwordGenerator.generateRandomPassword(16));
+                    String password = passwordGenerator.generateRandomPassword(16);
+                    String encodedPassword = passwordEncoder.encode(password);
+                    user.setPassword(encodedPassword);
                 }
-                saveUser(user);
+                userRepository.save(user);
                 httpStatus = HttpStatus.CREATED;
             }
         } else {
-            throw new InvalidProvider("Invalid provider");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", "Invalid provider"));
         }
 
-        Map<String, Object> body = generateResponseBody(
-                userMapper.userToSecurityUser(user),
-                clientId,
-                scopes,
-                request
-        );
+        Map<String, Object> body;
+        try {
+            body = generateResponseBody(
+                    userMapper.userToSecurityUser(user),
+                    clientId,
+                    scopes,
+                    request
+            );
 
-        return ResponseEntity.status(httpStatus).body(body);
+            return ResponseEntity.status(httpStatus).body(body);
+        } catch (JOSEException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", e.getMessage()));
+        }
     }
 
     private Map<String, Object> generateResponseBody(
