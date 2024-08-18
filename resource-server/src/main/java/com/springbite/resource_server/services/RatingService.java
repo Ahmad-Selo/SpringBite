@@ -1,54 +1,50 @@
 package com.springbite.resource_server.services;
 
 import com.springbite.resource_server.exceptions.ResourceNotFoundException;
+import com.springbite.resource_server.exceptions.ValueOutOfRangeException;
 import com.springbite.resource_server.models.Food;
 import com.springbite.resource_server.models.Rating;
-import com.springbite.resource_server.repositories.FoodRepository;
 import com.springbite.resource_server.repositories.RatingRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class RatingService {
 
     private final RatingRepository ratingRepository;
 
-    private final FoodRepository foodRepository;
-
-    private final FoodService foodService;
-
-    public RatingService(
-            RatingRepository ratingRepository,
-            FoodRepository foodRepository,
-            FoodService foodService) {
+    public RatingService(RatingRepository ratingRepository) {
         this.ratingRepository = ratingRepository;
-        this.foodRepository = foodRepository;
-        this.foodService = foodService;
     }
 
-    public ResponseEntity<?> addRating(String name, Authentication authentication, double ratingValue) {
-        try {
-            Food food = foodRepository
-                    .findByName(name)
-                    .orElseThrow(() -> new ResourceNotFoundException("Food not found"));
+    public boolean isRatingValueValid(Double ratingValue) {
+        return (ratingValue.compareTo(5.0) <= 0) && (ratingValue.compareTo(0.0) >= 0);
+    }
 
-            Rating rating = new Rating(
-                    food,
-                    authentication.getName(),
-                    ratingValue
-            );
-
-            ratingRepository.save(rating);
-
-            foodService.updateAverageRating(food);
-
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    public void saveRating(Food food, String username, Double ratingValue) throws ValueOutOfRangeException {
+        if (!isRatingValueValid(ratingValue)) {
+            throw new ValueOutOfRangeException("Value of rating value is out of range: " + 0 + " to " + 5);
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body("Thank you for your rating!");
+        Rating rating = new Rating(
+                food,
+                username,
+                ratingValue
+        );
+
+        ratingRepository.save(rating);
+    }
+
+    public double getAverageRating(Food food) throws ResourceNotFoundException {
+        List<Rating> ratings = ratingRepository
+                .findByFood(food)
+                .orElseThrow(() -> new ResourceNotFoundException("Food not found"));
+
+        return ratings.stream()
+                .mapToDouble(Rating::getRatingValue)
+                .average()
+                .orElse(0.0);
     }
 
 }
