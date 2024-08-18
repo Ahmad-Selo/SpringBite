@@ -137,10 +137,16 @@ public class UserService {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", "Bearer token is missing"));
+                    .singletonMap("error", "Bearer token is missing."));
         }
 
         String token = authHeader.substring(7);
+
+        if (dto.getPhoneNumber() == null || dto.getPhoneNumber().isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", "Phone number must not be blank."));
+        }
+
         User user;
         String username;
         String firstname;
@@ -191,7 +197,7 @@ public class UserService {
             }
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
-                    .singletonMap("error", "Invalid provider"));
+                    .singletonMap("error", "Invalid provider."));
         }
 
         Map<String, Object> body;

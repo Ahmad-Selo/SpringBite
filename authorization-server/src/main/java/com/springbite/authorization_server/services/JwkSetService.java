@@ -7,7 +7,7 @@ import com.springbite.authorization_server.security.JwkSet;
 import io.jsonwebtoken.security.InvalidKeyException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 
 import java.math.BigInteger;
 import java.nio.file.AccessDeniedException;
@@ -21,16 +21,16 @@ import java.util.Base64;
 @Service
 public class JwkSetService {
 
-    private WebClient webClient;
+    private RestClient restClient;
     private JwkSetResponse jwkSetResponse;
     private RSAPublicKey publicKey;
 
-    public WebClient getWebClient() {
-        return webClient;
+    public RestClient getRestClient() {
+        return restClient;
     }
 
-    public void setWebClient(WebClient webClient) {
-        this.webClient = webClient;
+    public void setRestClient(RestClient restClient) {
+        this.restClient = restClient;
     }
 
     public JwkSetResponse getJwkSetResponse() {
@@ -43,6 +43,10 @@ public class JwkSetService {
 
     public RSAPublicKey getPublicKey() {
         return publicKey;
+    }
+
+    public void setPublicKey(RSAPublicKey publicKey) {
+        this.publicKey = publicKey;
     }
 
     public void google(String token) {
@@ -71,13 +75,12 @@ public class JwkSetService {
     }
 
     private JwkSet fetchJwkSet(String baseUrl, String uri, String kid) throws Exception {
-        webClient = WebClient.create(baseUrl);
+        restClient = RestClient.create(baseUrl);
 
-        jwkSetResponse = webClient.get()
+        jwkSetResponse = restClient.get()
                 .uri(uri)
                 .retrieve()
-                .bodyToMono(JwkSetResponse.class)
-                .block();
+                .body(JwkSetResponse.class);
 
         if (jwkSetResponse == null) {
             throw new AccessDeniedException("Couldn't get jwks");
