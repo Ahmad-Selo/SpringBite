@@ -12,7 +12,6 @@ import com.springbite.authorization_server.models.dtos.UserDto;
 import com.springbite.authorization_server.repositories.UserRepository;
 import com.springbite.authorization_server.security.PasswordGenerator;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,8 +22,6 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.Instant;
 import java.util.*;
@@ -89,7 +86,7 @@ public class UserService {
     }
 
     public ResponseEntity<?> signup(
-            @Valid UserDto dto,
+            UserDto dto,
             HttpServletRequest request
     ) throws UserAlreadyExistsException, JOSEException {
         String authHeader = request.getHeader("Authorization");
@@ -135,9 +132,8 @@ public class UserService {
             throw new MissingBearerToken("Bearer token is missing");
         }
 
-        User user = userMapper.toUser(dto);
-
         String token = authHeader.substring(7);
+        User user;
         String username;
         String firstname;
         String lastname;
@@ -164,19 +160,18 @@ public class UserService {
                 lastname = (String) jwtService.extractClaim(token, jwkSetService.getPublicKey(),
                         "family_name");
 
-
             } catch (Exception e) {
                 throw new InvalidBearerTokenException(e.getMessage(), e);
             }
 
-            user.setUsername(username);
-            user.setFirstname(firstname);
-            user.setLastname(lastname);
-
-            if (isUserAlreadyExists(user.getUsername())) {
+            if (isUserAlreadyExists(dto.getUsername())) {
                 user = userRepository.findByUsername(username).orElse(null);
                 httpStatus = HttpStatus.OK;
             } else {
+                user = userMapper.toUser(dto);
+                user.setUsername(username);
+                user.setFirstname(firstname);
+                user.setLastname(lastname);
                 if (user.getPassword() == null) {
                     user.setPassword(passwordGenerator.generateRandomPassword(16));
                 }
@@ -290,19 +285,5 @@ public class UserService {
         idClaims.put("sid", request.getSession().getId());
 
         return idClaims;
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleMethodArgumentNotValidException(
-            MethodArgumentNotValidException exception
-    ) {
-        var errors = new ArrayList<>();
-        exception.getBindingResult().getAllErrors()
-                .forEach(error -> {
-                    var errorMessage = error.getDefaultMessage();
-                    errors.add(errorMessage);
-                });
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 }
