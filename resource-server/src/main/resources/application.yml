@@ -1,4 +1,5 @@
 server:
+  address: 10.66.66.9
   port: 9090
 
 spring:
