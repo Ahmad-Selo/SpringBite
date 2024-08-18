@@ -39,6 +39,21 @@ public class Food {
     public Food(
             String name,
             String description,
+            Double price,
+            Boolean recommended,
+            Cuisine cuisine
+    ) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.createdAt = new Date();
+        this.recommended = recommended;
+        this.cuisine = cuisine;
+    }
+
+    public Food(
+            String name,
+            String description,
             Double averageRating,
             List<Rating> ratings,
             Double price,
