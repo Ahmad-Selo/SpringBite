@@ -51,9 +51,7 @@ public class UserController {
                     errors.add(errorMessage);
                 });
 
-        var errorMessage = (errors.size() > 1 ? "errors" : "error");
-
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                .singletonMap(errorMessage, errors));
+                .singletonMap("error", errors));
     }
 }
