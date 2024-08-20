@@ -28,7 +28,7 @@ class UserMapperTest {
                 "0981227881"
         );
 
-        User user = userMapper.toUser(dto);
+        User user = userMapper.userDtoToUser(dto);
 
         assertEquals(dto.getUsername(), user.getUsername());
         assertEquals(dto.getPassword(), user.getPassword());

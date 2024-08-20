@@ -2,26 +2,33 @@ package com.springbite.authorization_server.services;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.springbite.authorization_server.exceptions.MissingBearerToken;
 import com.springbite.authorization_server.mappers.UserMapper;
 import com.springbite.authorization_server.models.SecurityUser;
 import com.springbite.authorization_server.models.User;
-import com.springbite.authorization_server.models.dtos.UserDto;
+import com.springbite.authorization_server.models.dtos.*;
 import com.springbite.authorization_server.repositories.UserRepository;
 import com.springbite.authorization_server.security.PasswordGenerator;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
 @Service
 public class UserService {
@@ -63,26 +70,47 @@ public class UserService {
         this.rsaKey = rsaKey;
     }
 
-    private boolean isUsernameAlreadyExists(String username) {
+    private boolean isUsernameAlreadyExist(String username) {
         return userRepository.findByUsername(username).isPresent();
     }
 
-    private boolean isPhoneNumberAlreadyExists(String phoneNumber) {
+    private boolean isPhoneNumberAlreadyExist(String phoneNumber) {
         return userRepository.findByPhoneNumber(phoneNumber).isPresent();
     }
 
-    public boolean isUserAlreadyExists(String username, String phoneNumber) {
-        return isUsernameAlreadyExists(username) || isPhoneNumberAlreadyExists(phoneNumber);
+    public boolean isUserAlreadyExist(String username, String phoneNumber) {
+        return isUsernameAlreadyExist(username) || isPhoneNumberAlreadyExist(phoneNumber);
     }
 
-    private void authenticateUser(SecurityUser securityUser) {
-        UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken.authenticated(
-                securityUser.getUsername(),
+    private String extractToken(HttpServletRequest request) throws MissingBearerToken {
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new MissingBearerToken("Bearer token is missing.");
+        }
+
+        return authHeader.substring(7);
+    }
+
+    private void validateToken(String token) throws Exception {
+        jwkSetService.google(token);
+
+        jwtService.validateToken(token, jwkSetService.getPublicKey());
+    }
+
+    private void authenticateUser(SecurityUser securityUser, HttpServletRequest request) {
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                securityUser,
                 securityUser.getPassword(),
                 securityUser.getAuthorities()
         );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        authentication.setDetails(new WebAuthenticationDetails(request));
+
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        securityContext.setAuthentication(authentication);
+        HttpSession session = request.getSession(true);
+        session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, securityContext);
     }
 
     public ResponseEntity<?> signup(
@@ -100,12 +128,12 @@ public class UserService {
 
         RegisteredClient registeredClient = registeredClientRepository.findByClientId(clientId);
 
-        if (isUserAlreadyExists(dto.getUsername(), dto.getPhoneNumber())) {
+        if (isUserAlreadyExist(dto.getUsername(), dto.getPhoneNumber())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Collections
                     .singletonMap("error", "username already exists"));
         }
 
-        User user = userMapper.toUser(dto);
+        User user = userMapper.userDtoToUser(dto);
 
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
@@ -127,43 +155,34 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<?> auth(
+    public ResponseEntity<?> signupWithProvider(
             UserDto dto,
             String provider,
-            String clientId,
-            String scope,
             HttpServletRequest request
     ) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        String token;
+        try {
+            token = extractToken(request);
+        } catch (MissingBearerToken e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", "Bearer token is missing."));
+                    .singletonMap("error", e.getMessage()));
         }
-
-        String token = authHeader.substring(7);
 
         if (dto.getPhoneNumber() == null || dto.getPhoneNumber().isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", "Phone number must not be blank."));
+                    .singletonMap("error", "phone number must not be blank."));
         }
 
         User user;
         String username;
         String firstname;
         String lastname;
-        Set<String> scopes = new HashSet<>();
-        HttpStatus httpStatus;
-
-        if (scope != null) {
-            scopes = Arrays.stream(scope.split(" "))
-                    .collect(Collectors.toSet());
-        }
+        String clientId;
+        Set<String> scopes;
 
         if (provider.equals("google")) {
             try {
-                jwkSetService.google(token);
-
-                jwtService.validateToken(token, jwkSetService.getPublicKey());
+                validateToken(token);
 
                 username = (String) jwtService.extractClaim(token, jwkSetService.getPublicKey(),
                         "email");
@@ -174,86 +193,261 @@ public class UserService {
                 lastname = (String) jwtService.extractClaim(token, jwkSetService.getPublicKey(),
                         "family_name");
 
+                clientId = (String) jwtService.extractClaim(token, jwkSetService.getPublicKey(),
+                        "aud");
+
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
                         .singletonMap("error", e.getMessage()));
             }
 
-            if (isUserAlreadyExists(dto.getUsername(), dto.getPhoneNumber())) {
-                user = userRepository.findByUsername(username).orElse(null);
-                httpStatus = HttpStatus.OK;
-            } else {
-                user = userMapper.toUser(dto);
-                user.setUsername(username);
-                user.setFirstname(firstname);
-                user.setLastname(lastname);
-                if (user.getPassword() == null) {
-                    String password = passwordGenerator.generateRandomPassword(16);
-                    String encodedPassword = passwordEncoder.encode(password);
-                    user.setPassword(encodedPassword);
-                }
-                userRepository.save(user);
-                httpStatus = HttpStatus.CREATED;
+            dto.setUsername(username);
+
+            if (isUserAlreadyExist(dto.getUsername(), dto.getPhoneNumber())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Collections
+                        .singletonMap("error", "User already exist."));
             }
+
+            RegisteredClient registeredClient = registeredClientRepository.findByClientId(clientId);
+
+            if (registeredClient == null) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
+                        .singletonMap("error", "Client id not exist."));
+            }
+
+            scopes = registeredClient.getScopes();
+
+            dto.setFirstname(firstname);
+            dto.setLastname(lastname);
+            String password = passwordGenerator.generateRandomPassword(16);
+            dto.setPassword(password);
+
+            user = userMapper.userDtoToUser(dto);
+
+            String encodedPassword = passwordEncoder.encode(user.getPassword());
+            user.setPassword(encodedPassword);
+
+            userRepository.save(user);
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
                     .singletonMap("error", "Invalid provider."));
         }
 
-        Map<String, Object> body;
         try {
-            body = generateResponseBody(
+            Map<String, Object> body = generateResponseBody(
                     userMapper.userToSecurityUser(user),
                     clientId,
                     scopes,
                     request
             );
 
-            return ResponseEntity.status(httpStatus).body(body);
+            return ResponseEntity.status(HttpStatus.CREATED).body(body);
         } catch (JOSEException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
                     .singletonMap("error", e.getMessage()));
         }
     }
 
+    public ResponseEntity<?> auth(
+            String provider,
+            String scope,
+            HttpServletRequest request
+    ) {
+        String token;
+
+        try {
+            token = extractToken(request);
+        } catch (MissingBearerToken e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", e.getMessage()));
+        }
+
+        User user;
+        String username;
+        String clientId;
+        Set<String> scopes = new HashSet<>();
+
+        if (scope != null) {
+            scopes = Arrays.stream(scope.split(" "))
+                    .collect(Collectors.toSet());
+        }
+
+        if (provider.equals("google")) {
+            try {
+                validateToken(token);
+
+                username = (String) jwtService.extractClaim(token, jwkSetService.getPublicKey(),
+                        "email");
+
+                clientId = (String) jwtService.extractClaim(token, jwkSetService.getPublicKey(),
+                        "aud");
+
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
+                        .singletonMap("error", e.getMessage()));
+            }
+
+            try {
+                user = userRepository.findByUsername(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+
+            } catch (UsernameNotFoundException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                        .singletonMap("error", e.getMessage()));
+            }
+
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
+                    .singletonMap("error", "Invalid provider."));
+        }
+
+        try {
+            Map<String, Object> body = generateResponseBody(
+                    userMapper.userToSecurityUser(user),
+                    clientId,
+                    scopes,
+                    request
+            );
+
+            return ResponseEntity.status(HttpStatus.OK).body(body);
+        } catch (JOSEException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", e.getMessage()));
+        }
+    }
+
+    public ResponseEntity<?> forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
+        if (!isUsernameAlreadyExist(forgotPasswordRequest.getUsername())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", "User with this email does not exist."));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(Collections
+                .singletonMap("message", "Password reset instruction have been sent to your email."));
+    }
+
+    public ResponseEntity<?> changePassword(Long userId, ChangePasswordRequest changePasswordRequest) {
+        User user;
+
+        try {
+            user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", e.getMessage()));
+        }
+
+        if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
+                    .singletonMap("error", "Password incorrect."));
+        }
+
+        user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+
+        userRepository.save(user);
+
+        return ResponseEntity.status(HttpStatus.OK).body(Collections
+                .singletonMap("message", "Password have been changed successfully."));
+    }
+
+    public ResponseEntity<?> updateUserDetails(Long userId, UpdateUserRequest updateUserRequest) {
+        User user;
+
+        try {
+            user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", e.getMessage()));
+        }
+
+        String username = updateUserRequest.getUsername();
+        String password = updateUserRequest.getPassword();
+        String firstname = updateUserRequest.getFirstname();
+        String lastname = updateUserRequest.getLastname();
+        String phoneNumber = updateUserRequest.getPhoneNumber();
+
+        if (username != null && !username.isBlank()) {
+            user.setUsername(username);
+        }
+
+        if (password != null && !password.isBlank()) {
+            user.setPassword(passwordEncoder.encode(password));
+        }
+
+        if (firstname != null && !firstname.isBlank()) {
+            user.setFirstname(firstname);
+        }
+
+        if (lastname != null && !lastname.isBlank()) {
+            user.setLastname(lastname);
+        }
+
+        if (phoneNumber != null && !phoneNumber.isBlank()) {
+            user.setPhoneNumber(phoneNumber);
+        }
+
+        userRepository.save(user);
+
+        return ResponseEntity.status(HttpStatus.OK).body(Collections
+                .singletonMap("message", "User details have been updated successfully."));
+    }
+
+    public ResponseEntity<?> deleteUser(Long userId, DeleteUserRequest deleteUserRequest) {
+        User user;
+
+        try {
+            user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", e.getMessage()));
+        }
+
+        if (!passwordEncoder.matches(deleteUserRequest.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
+                    .singletonMap("error", "Password incorrect."));
+        }
+
+        userRepository.delete(user);
+
+        return ResponseEntity.status(HttpStatus.OK).body(Collections
+                .singletonMap("message", "User have been deleted successfully."));
+    }
+
     private Map<String, Object> generateResponseBody(
-            SecurityUser user,
+            SecurityUser securityUser,
             String clientId,
             Set<String> scopes,
             HttpServletRequest request) throws JOSEException {
-        authenticateUser(user);
+        authenticateUser(securityUser, request);
 
-        long auth_time = Instant.now().getEpochSecond();
+        long authTime = Instant.now().getEpochSecond();
 
-        Map<String, Object> accessClaims = setAccessClaims(
-                user.getUsername(),
+        String accessToken = jwtService.generateAccessToken(
+                rsaKey,
+                securityUser.getUsername(),
                 clientId,
                 scopes,
-                (Collection<GrantedAuthority>) user.getAuthorities()
+                (Collection<GrantedAuthority>) securityUser.getAuthorities()
         );
 
-        String accessToken = jwtService.generateAccessToken(rsaKey, accessClaims);
-
-        Map<String, Object> idClaims = setIdClaims(
-                user.getUsername(),
+        String idToken = jwtService.generateIdToken(
+                rsaKey,
+                securityUser.getUsername(),
                 clientId,
-                auth_time,
-                (Collection<GrantedAuthority>) user.getAuthorities(), request
+                authTime,
+                (Collection<GrantedAuthority>) securityUser.getAuthorities(),
+                request
         );
-
-        String idToken = jwtService.generateIdToken(rsaKey, idClaims);
 
         Map<String, Object> body = new HashMap<>();
 
-        body.put(
-                "access_token", accessToken
-        );
+        body.put("access_token", accessToken);
 
         body.put("scope", scopes);
-
-        body.put("id_token", idToken);
-
-        body.put("token_type", "Bearer");
 
         int exp = (Integer) jwtService.extractClaim(accessToken, rsaKey.toRSAPublicKey(), "exp");
 
@@ -261,53 +455,11 @@ public class UserService {
 
         body.put("expires_in", expiresIn);
 
+        body.put("token_type", "Bearer");
+
+        body.put("id_token", idToken);
+
         return body;
     }
 
-    private Map<String, Object> setAccessClaims(
-            String sub,
-            String aud,
-            Set<String> scopes,
-            Collection<GrantedAuthority> authorities) {
-        Map<String, Object> accessClaims = new HashMap<>();
-
-        accessClaims.put("sub", sub);
-
-        accessClaims.put("aud", aud);
-
-        if (!scopes.isEmpty()) {
-            accessClaims.put("scope", scopes);
-        }
-
-        accessClaims.put("jti", UUID.randomUUID().toString());
-
-        accessClaims.put("authorities", authorities
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList()));
-
-        return accessClaims;
-    }
-
-    private Map<String, Object> setIdClaims(
-            String sub,
-            String clientId,
-            long auth_time,
-            Collection<GrantedAuthority> authorities,
-            HttpServletRequest request) {
-        Map<String, Object> idClaims = new HashMap<>();
-
-        idClaims.put("sub", sub);
-        idClaims.put("aud", clientId);
-        idClaims.put("azp", clientId);
-        idClaims.put("auth_time", auth_time);
-        idClaims.put("jti", UUID.randomUUID().toString());
-        idClaims.put("authorities", authorities
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList()));
-        idClaims.put("sid", request.getSession().getId());
-
-        return idClaims;
-    }
 }

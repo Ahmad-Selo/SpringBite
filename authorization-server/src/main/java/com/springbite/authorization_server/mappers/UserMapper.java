@@ -10,7 +10,7 @@ import static com.springbite.authorization_server.security.Role.ROLE_USER;
 @Component
 public class UserMapper {
 
-    public User toUser(UserDto dto) {
+    public User userDtoToUser(UserDto dto) {
         return new User(
                 dto.getUsername(),
                 dto.getPassword(),
@@ -23,7 +23,7 @@ public class UserMapper {
         );
     }
 
-    public UserDto toUserDto(User user) {
+    public UserDto userToUserDto(User user) {
         return new UserDto(
                 user.getUsername(),
                 user.getPassword(),

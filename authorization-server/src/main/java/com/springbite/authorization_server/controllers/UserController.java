@@ -1,20 +1,26 @@
 package com.springbite.authorization_server.controllers;
 
-import com.springbite.authorization_server.models.dtos.UserDto;
+import com.springbite.authorization_server.models.dtos.*;
 import com.springbite.authorization_server.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.Logger;
 
 @RestController
 public class UserController {
+
+    private final Logger logger = Logger.getLogger(
+            UserController.class.getName()
+    );
 
     private final UserService userService;
 
@@ -29,14 +35,54 @@ public class UserController {
         return userService.signup(dto, request);
     }
 
+    @PostMapping("/signup/{provider}")
+    public ResponseEntity<?> signupWithProvider(
+            @NotNull @RequestBody UserDto dto,
+            @PathVariable("provider") String provider,
+            HttpServletRequest request
+    ) {
+        return userService.signupWithProvider(dto, provider, request);
+    }
+
     @PostMapping("/auth/{provider}")
     public ResponseEntity<?> auth(
-            @RequestBody UserDto dto,
-            @NonNull @PathVariable("provider") String provider,
-            @NonNull @RequestParam("client_id") String clientId,
-            @NonNull @RequestParam("scope") String scope,
+            @PathVariable("provider") String provider,
+            @NotNull @RequestParam("scope") String scope,
             HttpServletRequest request) {
-        return userService.auth(dto, provider, clientId, scope, request);
+        return userService.auth(provider, scope, request);
+    }
+
+    @PostMapping("/auth/forgot-password")
+    public ResponseEntity<?> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest
+    ) {
+        return userService.forgotPassword(forgotPasswordRequest);
+    }
+
+    // TODO: rest-password endpoint
+
+    @PutMapping("/accounts/{user-id}/change-password")
+    private ResponseEntity<?> changePassword(
+            @PathVariable("user-id") Long userId,
+            @Valid @RequestBody ChangePasswordRequest changePasswordRequest
+    ) {
+        return userService.changePassword(userId, changePasswordRequest);
+    }
+
+    @PatchMapping("/accounts/{user-id}/update")
+    public ResponseEntity<?> updateUser(
+            @PathVariable("user-id") Long userId,
+            @Valid @RequestBody UpdateUserRequest updateUserRequest
+    ) {
+        return userService.updateUserDetails(userId, updateUserRequest);
+    }
+
+    @DeleteMapping("/accounts/{user-id}/delete")
+    public ResponseEntity<?> deleteUser(
+            @PathVariable("user-id") Long userId,
+            @Valid @RequestBody DeleteUserRequest deleteUserRequest
+    ) {
+        return userService.deleteUser(userId, deleteUserRequest);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -53,5 +99,13 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
                 .singletonMap("error", errors));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<?> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException exception
+    ) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                .singletonMap("error", "Missing body."));
     }
 }
