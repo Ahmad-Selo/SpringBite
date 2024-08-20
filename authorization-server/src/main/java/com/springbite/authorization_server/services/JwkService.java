@@ -2,7 +2,9 @@ package com.springbite.authorization_server.services;
 
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
+import com.springbite.authorization_server.entities.JwkEntity;
 import com.springbite.authorization_server.models.dtos.JwkSetResponse;
+import com.springbite.authorization_server.repositories.JwkRepository;
 import com.springbite.authorization_server.security.JwkSet;
 import io.jsonwebtoken.security.InvalidKeyException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
@@ -17,13 +19,23 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
+import java.util.Optional;
+
+import static com.springbite.authorization_server.utils.KeyPairUtil.decodePublicKey;
+import static com.springbite.authorization_server.utils.KeyPairUtil.encodePublicKey;
 
 @Service
-public class JwkSetService {
+public class JwkService {
+
+    private final JwkRepository jwkRepository;
 
     private RestClient restClient;
+
     private JwkSetResponse jwkSetResponse;
-    private RSAPublicKey publicKey;
+
+    public JwkService(JwkRepository jwkRepository) {
+        this.jwkRepository = jwkRepository;
+    }
 
     public RestClient getRestClient() {
         return restClient;
@@ -41,15 +53,7 @@ public class JwkSetService {
         this.jwkSetResponse = jwkSetResponse;
     }
 
-    public RSAPublicKey getPublicKey() {
-        return publicKey;
-    }
-
-    public void setPublicKey(RSAPublicKey publicKey) {
-        this.publicKey = publicKey;
-    }
-
-    public void google(String token) {
+    public RSAPublicKey google(String token) {
         String baseUrl = "https://www.googleapis.com";
         String uri = "/oauth2/v3/certs";
 
@@ -62,16 +66,32 @@ public class JwkSetService {
                 throw new InvalidBearerTokenException("Invalid token");
             }
 
-            retrievePublicKey(baseUrl, uri, kid);
+            Optional<JwkEntity> jwkEntityOptional = jwkRepository.findById(kid);
+
+            if (jwkEntityOptional.isPresent()) {
+                JwkEntity jwkEntity = jwkEntityOptional.get();
+                return decodePublicKey(jwkEntity.getPublicKey());
+            }
+
+            RSAPublicKey publicKey = retrievePublicKey(baseUrl, uri, kid);
+
+            JwkEntity jwkEntity = new JwkEntity(
+                    kid,
+                    encodePublicKey(publicKey)
+            );
+
+            jwkRepository.save(jwkEntity);
+
+            return publicKey;
 
         } catch (Exception e) {
             throw new InvalidBearerTokenException("Invalid token");
         }
     }
 
-    private void retrievePublicKey(String baseUrl, String uri, String kid) throws Exception {
+    private RSAPublicKey retrievePublicKey(String baseUrl, String uri, String kid) throws Exception {
         JwkSet jwkSet = fetchJwkSet(baseUrl, uri, kid);
-        publicKey = generateRSAPublicKey(jwkSet);
+        return generateRSAPublicKey(jwkSet);
     }
 
     private JwkSet fetchJwkSet(String baseUrl, String uri, String kid) throws Exception {
