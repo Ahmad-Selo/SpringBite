@@ -129,9 +129,8 @@ public class UserService {
         user.setPassword(encodedPassword);
         userRepository.save(user);
 
-        Map<String, Object> body;
         try {
-            body = generateResponseBody(
+            Map<String, Object> body = generateResponseBody(
                     userMapper.userToSecurityUser(user),
                     clientId,
                     registeredClient.getScopes(),
@@ -146,16 +145,11 @@ public class UserService {
     }
 
     public ResponseEntity<?> signupWithProvider(
-            UserDto dto,
+            SignupWithProviderRequest signupWithProviderRequest,
             String provider,
             HttpServletRequest request
     ) {
         String token = extractToken(request);
-
-        if (dto.getPhoneNumber() == null || dto.getPhoneNumber().isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", "phone number must not be blank."));
-        }
 
         User user;
         String username;
@@ -185,9 +179,7 @@ public class UserService {
                         .singletonMap("error", e.getMessage()));
             }
 
-            dto.setUsername(username);
-
-            if (isUserAlreadyExist(dto.getUsername(), dto.getPhoneNumber())) {
+            if (isUserAlreadyExist(username, signupWithProviderRequest.getPhoneNumber())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(Collections
                         .singletonMap("error", "User already exist."));
             }
@@ -201,15 +193,19 @@ public class UserService {
 
             scopes = registeredClient.getScopes();
 
-            dto.setFirstname(firstname);
-            dto.setLastname(lastname);
             String password = passwordGenerator.generateRandomPassword(16);
-            dto.setPassword(password);
+
+            String encodedPassword = passwordEncoder.encode(password);
+
+            UserDto dto = new UserDto(
+                    username,
+                    encodedPassword,
+                    firstname,
+                    lastname,
+                    signupWithProviderRequest.getPhoneNumber()
+            );
 
             user = userMapper.userDtoToUser(dto);
-
-            String encodedPassword = passwordEncoder.encode(user.getPassword());
-            user.setPassword(encodedPassword);
 
             userRepository.save(user);
         } else {
@@ -361,10 +357,15 @@ public class UserService {
             user.setPhoneNumber(phoneNumber);
         }
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        return ResponseEntity.status(HttpStatus.OK).body(Collections
-                .singletonMap("message", "User details have been updated successfully."));
+        Map<String, Object> body = new HashMap<>();
+
+        body.put("message", "User details have been updated successfully.");
+
+        body.put("user", savedUser);
+
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
     public ResponseEntity<?> deleteUser(Long userId, DeleteUserRequest deleteUserRequest) {
@@ -431,6 +432,8 @@ public class UserService {
         body.put("token_type", "Bearer");
 
         body.put("id_token", idToken);
+
+        body.put("user", userMapper.securityUserToUserResponseDto(securityUser));
 
         return body;
     }

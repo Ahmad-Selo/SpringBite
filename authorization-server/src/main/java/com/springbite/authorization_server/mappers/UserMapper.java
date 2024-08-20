@@ -3,6 +3,7 @@ package com.springbite.authorization_server.mappers;
 import com.springbite.authorization_server.models.SecurityUser;
 import com.springbite.authorization_server.models.User;
 import com.springbite.authorization_server.models.dtos.UserDto;
+import com.springbite.authorization_server.models.dtos.UserResponseDto;
 import org.springframework.stereotype.Component;
 
 import static com.springbite.authorization_server.security.Role.ROLE_USER;
@@ -30,6 +31,22 @@ public class UserMapper {
                 user.getFirstname(),
                 user.getLastname(),
                 user.getPhoneNumber()
+        );
+    }
+
+    public UserResponseDto userToUserResponseDto(User user) {
+        return new UserResponseDto(
+                user.getId(),
+                user.getUsername(),
+                user.getRole()
+        );
+    }
+
+    public UserResponseDto securityUserToUserResponseDto(SecurityUser securityUser) {
+        return new UserResponseDto(
+                securityUser.getUser().getId(),
+                securityUser.getUsername(),
+                securityUser.getUser().getRole()
         );
     }
 

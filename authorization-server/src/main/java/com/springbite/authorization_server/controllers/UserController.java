@@ -38,11 +38,11 @@ public class UserController {
 
     @PostMapping("/signup/{provider}")
     public ResponseEntity<?> signupWithProvider(
-            @NotNull @RequestBody UserDto dto,
+            @Valid @RequestBody SignupWithProviderRequest signupWithProviderRequest,
             @PathVariable("provider") String provider,
             HttpServletRequest request
     ) {
-        return userService.signupWithProvider(dto, provider, request);
+        return userService.signupWithProvider(signupWithProviderRequest, provider, request);
     }
 
     @PostMapping("/auth/{provider}")
