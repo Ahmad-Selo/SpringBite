@@ -2,6 +2,7 @@ package com.springbite.authorization_server.services;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.springbite.authorization_server.config.TrustedIssuer;
 import com.springbite.authorization_server.exceptions.InvalidJwt;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -18,20 +19,14 @@ import java.util.stream.Collectors;
 public class JwtService {
 
     private final String issuer = "http://10.66.66.9";
-    private final Set<String> issuers;
-    private final Set<String> clients;
+    private final TrustedIssuer trustedIssuer;
 
-    public JwtService(Set<String> issuers, Set<String> clients) {
-        this.issuers = issuers;
-        this.clients = clients;
+    public JwtService(TrustedIssuer trustedIssuer) {
+        this.trustedIssuer = trustedIssuer;
     }
 
-    public Set<String> getIssuers() {
-        return issuers;
-    }
-
-    public Set<String> getClients() {
-        return clients;
+    public TrustedIssuer getTrustedIssuer() {
+        return trustedIssuer;
     }
 
     private Map<String, Object> setAccessClaims(
@@ -166,11 +161,11 @@ public class JwtService {
     }
 
     private boolean validateIss(String token, RSAPublicKey publicKey) {
-        return issuers.contains((String) extractClaim(token, publicKey, "iss"));
+        return trustedIssuer.getIssuers().contains((String) extractClaim(token, publicKey, "iss"));
     }
 
     private boolean validateAud(String token, RSAPublicKey publicKey) {
-        return clients.contains((String) extractClaim(token, publicKey, "aud"));
+        return trustedIssuer.getClients().contains((String) extractClaim(token, publicKey, "aud"));
     }
 
     private boolean validateExp(String token, RSAPublicKey publicKey) {

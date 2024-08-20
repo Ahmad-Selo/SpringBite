@@ -91,7 +91,7 @@ public class UserService {
     private void authenticateUser(SecurityUser securityUser, HttpServletRequest request) {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                 securityUser,
-                securityUser.getPassword(),
+                null,
                 securityUser.getAuthorities()
         );
 

@@ -18,3 +18,9 @@ trusted:
   clients:
     - 622455662282-vfr0an7e1hdunsifk1vke9duun486pfi.apps.googleusercontent.com
 
+csrf:
+  whiteSetUris:
+    - /login
+    - /signup/**
+    - /auth/**
+    - /accounts/**

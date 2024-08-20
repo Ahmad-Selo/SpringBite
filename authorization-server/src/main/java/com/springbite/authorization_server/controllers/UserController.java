@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,16 +60,16 @@ public class UserController {
         return userService.forgotPassword(forgotPasswordRequest);
     }
 
-    // TODO: rest-password endpoint
-
+    @PreAuthorize("#userId == authentication.principal.user.id")
     @PutMapping("/accounts/{user-id}/change-password")
-    private ResponseEntity<?> changePassword(
+    public ResponseEntity<?> changePassword(
             @PathVariable("user-id") Long userId,
             @Valid @RequestBody ChangePasswordRequest changePasswordRequest
     ) {
         return userService.changePassword(userId, changePasswordRequest);
     }
 
+    @PreAuthorize("#userId == authentication.principal.user.id")
     @PatchMapping("/accounts/{user-id}/update")
     public ResponseEntity<?> updateUser(
             @PathVariable("user-id") Long userId,
@@ -77,6 +78,7 @@ public class UserController {
         return userService.updateUserDetails(userId, updateUserRequest);
     }
 
+    @PreAuthorize("#userId == authentication.principal.user.id")
     @DeleteMapping("/accounts/{user-id}/delete")
     public ResponseEntity<?> deleteUser(
             @PathVariable("user-id") Long userId,

@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -41,45 +42,38 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.springbite.authorization_server.utils.KeyPairUtil.*;
 
 @Configuration
 @ConfigurationProperties(prefix = "trusted")
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final KeyPairRepository keyPairRepository;
     private final JwkRepository jwkRepository;
-
-    private Set<String> issuers;
-    private Set<String> clients;
 
     public SecurityConfig(KeyPairRepository keyPairRepository, JwkRepository jwkRepository) {
         this.keyPairRepository = keyPairRepository;
         this.jwkRepository = jwkRepository;
     }
 
-    public Set<String> getIssuers() {
-        return issuers;
-    }
-
-    public void setIssuers(Set<String> issuers) {
-        this.issuers = issuers;
-    }
-
-    public Set<String> getClients() {
-        return clients;
-    }
-
-    public void setClients(Set<String> clients) {
-        this.clients = clients;
+    @Bean
+    @ConfigurationProperties(prefix = "trusted")
+    public TrustedIssuer trustedIssuer() {
+        return new TrustedIssuer();
     }
 
     @Bean
-    public JwtService jwtService() {
-        return new JwtService(issuers, clients);
+    @ConfigurationProperties(prefix = "csrf")
+    public CsrfWhiteSet csrfWhiteSet() {
+        return new CsrfWhiteSet();
+    }
+
+    @Bean
+    public JwtService jwtService(TrustedIssuer trustedIssuer) {
+        return new JwtService(trustedIssuer);
     }
 
     @Bean
@@ -119,7 +113,7 @@ public class SecurityConfig {
         );
 
         http.addFilterBefore(
-                new JwtAuthFilter(jwtService(), jwkService()),
+                new JwtAuthFilter(jwtService(trustedIssuer()), jwkService()),
                 UsernamePasswordAuthenticationFilter.class
         );
 
@@ -129,7 +123,7 @@ public class SecurityConfig {
         );
 
         http.csrf(
-                c -> c.ignoringRequestMatchers("/login", "/signup/**", "/auth/**")
+                c -> c.ignoringRequestMatchers(csrfWhiteSet().whiteSetUris.toArray(new String[0]))
         );
 
         return http.build();
