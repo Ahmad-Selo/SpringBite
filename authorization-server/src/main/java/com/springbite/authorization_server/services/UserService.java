@@ -2,7 +2,6 @@ package com.springbite.authorization_server.services;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
-import com.springbite.authorization_server.exceptions.MissingBearerToken;
 import com.springbite.authorization_server.mappers.UserMapper;
 import com.springbite.authorization_server.models.SecurityUser;
 import com.springbite.authorization_server.models.User;
@@ -24,6 +23,7 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Service;
 
+import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,7 +43,7 @@ public class UserService {
 
     private final PasswordGenerator passwordGenerator;
 
-    private final JwkSetService jwkSetService;
+    private final JwkService jwkService;
 
     private final JwtService jwtService;
 
@@ -56,7 +56,7 @@ public class UserService {
             UserMapper userMapper,
             PasswordEncoder passwordEncoder,
             PasswordGenerator passwordGenerator,
-            JwkSetService jwkSetService,
+            JwkService jwkService,
             JwtService jwtService,
             RSAKey rsaKey
     ) {
@@ -65,7 +65,7 @@ public class UserService {
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.passwordGenerator = passwordGenerator;
-        this.jwkSetService = jwkSetService;
+        this.jwkService = jwkService;
         this.jwtService = jwtService;
         this.rsaKey = rsaKey;
     }
@@ -82,20 +82,10 @@ public class UserService {
         return isUsernameAlreadyExist(username) || isPhoneNumberAlreadyExist(phoneNumber);
     }
 
-    private String extractToken(HttpServletRequest request) throws MissingBearerToken {
+    private String extractToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new MissingBearerToken("Bearer token is missing.");
-        }
-
         return authHeader.substring(7);
-    }
-
-    private void validateToken(String token) throws Exception {
-        jwkSetService.google(token);
-
-        jwtService.validateToken(token, jwkSetService.getPublicKey());
     }
 
     private void authenticateUser(SecurityUser securityUser, HttpServletRequest request) {
@@ -160,13 +150,7 @@ public class UserService {
             String provider,
             HttpServletRequest request
     ) {
-        String token;
-        try {
-            token = extractToken(request);
-        } catch (MissingBearerToken e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
+        String token = extractToken(request);
 
         if (dto.getPhoneNumber() == null || dto.getPhoneNumber().isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
@@ -182,18 +166,18 @@ public class UserService {
 
         if (provider.equals("google")) {
             try {
-                validateToken(token);
+                RSAPublicKey publicKey = jwkService.google(token);
 
-                username = (String) jwtService.extractClaim(token, jwkSetService.getPublicKey(),
+                username = (String) jwtService.extractClaim(token, publicKey,
                         "email");
 
-                firstname = (String) jwtService.extractClaim(token, jwkSetService.getPublicKey(),
+                firstname = (String) jwtService.extractClaim(token, publicKey,
                         "given_name");
 
-                lastname = (String) jwtService.extractClaim(token, jwkSetService.getPublicKey(),
+                lastname = (String) jwtService.extractClaim(token, publicKey,
                         "family_name");
 
-                clientId = (String) jwtService.extractClaim(token, jwkSetService.getPublicKey(),
+                clientId = (String) jwtService.extractClaim(token, publicKey,
                         "aud");
 
             } catch (Exception e) {
@@ -253,14 +237,7 @@ public class UserService {
             String scope,
             HttpServletRequest request
     ) {
-        String token;
-
-        try {
-            token = extractToken(request);
-        } catch (MissingBearerToken e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
+        String token = extractToken(request);
 
         User user;
         String username;
@@ -274,28 +251,24 @@ public class UserService {
 
         if (provider.equals("google")) {
             try {
-                validateToken(token);
+                RSAPublicKey publicKey = jwkService.google(token);
 
-                username = (String) jwtService.extractClaim(token, jwkSetService.getPublicKey(),
+                username = (String) jwtService.extractClaim(token, publicKey,
                         "email");
 
-                clientId = (String) jwtService.extractClaim(token, jwkSetService.getPublicKey(),
+                clientId = (String) jwtService.extractClaim(token, publicKey,
                         "aud");
 
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
-                        .singletonMap("error", e.getMessage()));
-            }
-
-            try {
                 user = userRepository.findByUsername(username)
                         .orElseThrow(() -> new UsernameNotFoundException("User not found."));
 
             } catch (UsernameNotFoundException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
                         .singletonMap("error", e.getMessage()));
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
+                        .singletonMap("error", e.getMessage()));
             }
-
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
                     .singletonMap("error", "Invalid provider."));

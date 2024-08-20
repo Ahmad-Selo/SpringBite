@@ -7,9 +7,11 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.springbite.authorization_server.entities.KeyPairEntity;
 import com.springbite.authorization_server.filters.ClientAuthFilter;
+import com.springbite.authorization_server.filters.JwtAuthFilter;
+import com.springbite.authorization_server.repositories.JwkRepository;
 import com.springbite.authorization_server.repositories.KeyPairRepository;
+import com.springbite.authorization_server.services.JwkService;
 import com.springbite.authorization_server.services.JwtService;
-import com.springbite.authorization_server.utils.KeyPairUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -42,17 +44,21 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.springbite.authorization_server.utils.KeyPairUtil.*;
+
 @Configuration
 @ConfigurationProperties(prefix = "trusted")
 public class SecurityConfig {
 
     private final KeyPairRepository keyPairRepository;
+    private final JwkRepository jwkRepository;
 
     private Set<String> issuers;
     private Set<String> clients;
 
-    public SecurityConfig(KeyPairRepository keyPairRepository) {
+    public SecurityConfig(KeyPairRepository keyPairRepository, JwkRepository jwkRepository) {
         this.keyPairRepository = keyPairRepository;
+        this.jwkRepository = jwkRepository;
     }
 
     public Set<String> getIssuers() {
@@ -74,6 +80,11 @@ public class SecurityConfig {
     @Bean
     public JwtService jwtService() {
         return new JwtService(issuers, clients);
+    }
+
+    @Bean
+    public JwkService jwkService() {
+        return new JwkService(jwkRepository);
     }
 
     @Bean
@@ -108,8 +119,13 @@ public class SecurityConfig {
         );
 
         http.addFilterBefore(
-                new ClientAuthFilter(registeredClientRepository, passwordEncoder()),
+                new JwtAuthFilter(jwtService(), jwkService()),
                 UsernamePasswordAuthenticationFilter.class
+        );
+
+        http.addFilterBefore(
+                new ClientAuthFilter(registeredClientRepository, passwordEncoder()),
+                JwtAuthFilter.class
         );
 
         http.csrf(
@@ -135,8 +151,8 @@ public class SecurityConfig {
 
         if (keyPairEntityOptional.isPresent()) {
             KeyPairEntity keyPairEntity = keyPairEntityOptional.get();
-            RSAPublicKey publicKey = KeyPairUtil.decodePublicKey(keyPairEntity.getPublicKey());
-            RSAPrivateKey privateKey = KeyPairUtil.decodePrivateKey(keyPairEntity.getPrivateKey());
+            RSAPublicKey publicKey = decodePublicKey(keyPairEntity.getPublicKey());
+            RSAPrivateKey privateKey = decodePrivateKey(keyPairEntity.getPrivateKey());
 
             rsaKey = new RSAKey.Builder(publicKey)
                     .privateKey(privateKey)
@@ -157,8 +173,8 @@ public class SecurityConfig {
 
             KeyPairEntity keyPairEntity = new KeyPairEntity();
             keyPairEntity.setId(id);
-            keyPairEntity.setPublicKey(KeyPairUtil.encodePublicKey(publicKey));
-            keyPairEntity.setPrivateKey(KeyPairUtil.encodePrivateKey(privateKey));
+            keyPairEntity.setPublicKey(encodePublicKey(publicKey));
+            keyPairEntity.setPrivateKey(encodePrivateKey(privateKey));
 
             keyPairRepository.save(keyPairEntity);
         }

@@ -52,7 +52,7 @@ public class UserController {
         return userService.auth(provider, scope, request);
     }
 
-    @PostMapping("/auth/forgot-password")
+    @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(
             @Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest
     ) {
