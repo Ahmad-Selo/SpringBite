@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Collections;
 
 public class ClientAuthFilter implements Filter {
 
@@ -33,7 +34,7 @@ public class ClientAuthFilter implements Filter {
         String uri = httpRequest.getRequestURI();
 
         if (!uri.equals("/signup")) {
-            chain.doFilter(request, response);
+            chain.doFilter(httpRequest, httpResponse);
             return;
         }
 
@@ -41,7 +42,8 @@ public class ClientAuthFilter implements Filter {
 
         if (authHeader == null || !authHeader.startsWith("Basic ")) {
             httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            httpResponse.getWriter().write("Authorization header missing or invalid.");
+            httpResponse.getWriter().print(Collections
+                    .singletonMap("error", "Authorization header missing or invalid."));
             return;
         }
 
@@ -57,9 +59,10 @@ public class ClientAuthFilter implements Filter {
 
         if (registeredClient == null || !passwordEncoder.matches(clientSecret, registeredClient.getClientSecret())) {
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            httpResponse.getWriter().write("Invalid client credentials.");
+            httpResponse.getWriter().print(Collections
+                    .singletonMap("error", "Invalid client credentials."));
             return;
         }
-        chain.doFilter(request, response);
+        chain.doFilter(httpRequest, httpResponse);
     }
 }
