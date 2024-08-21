@@ -123,15 +123,17 @@ public class UserService {
                     .singletonMap("error", "username already exists"));
         }
 
+        String encodedPassword = passwordEncoder.encode(dto.getPassword());
+
+        dto.setPassword(encodedPassword);
+
         User user = userMapper.userDtoToUser(dto);
 
-        String encodedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
         try {
             Map<String, Object> body = generateResponseBody(
-                    userMapper.userToSecurityUser(user),
+                    userMapper.userToSecurityUser(savedUser),
                     clientId,
                     registeredClient.getScopes(),
                     request
@@ -152,6 +154,7 @@ public class UserService {
         String token = extractToken(request);
 
         User user;
+        User savedUser;
         String username;
         String firstname;
         String lastname;
@@ -207,7 +210,7 @@ public class UserService {
 
             user = userMapper.userDtoToUser(dto);
 
-            userRepository.save(user);
+            savedUser = userRepository.save(user);
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
                     .singletonMap("error", "Invalid provider."));
@@ -215,7 +218,7 @@ public class UserService {
 
         try {
             Map<String, Object> body = generateResponseBody(
-                    userMapper.userToSecurityUser(user),
+                    userMapper.userToSecurityUser(savedUser),
                     clientId,
                     scopes,
                     request
@@ -332,17 +335,12 @@ public class UserService {
         }
 
         String username = updateUserRequest.getUsername();
-        String password = updateUserRequest.getPassword();
         String firstname = updateUserRequest.getFirstname();
         String lastname = updateUserRequest.getLastname();
         String phoneNumber = updateUserRequest.getPhoneNumber();
 
         if (username != null && !username.isBlank()) {
             user.setUsername(username);
-        }
-
-        if (password != null && !password.isBlank()) {
-            user.setPassword(passwordEncoder.encode(password));
         }
 
         if (firstname != null && !firstname.isBlank()) {
@@ -413,6 +411,7 @@ public class UserService {
                 securityUser.getUsername(),
                 clientId,
                 authTime,
+                securityUser.getUser().getId(),
                 (Collection<GrantedAuthority>) securityUser.getAuthorities(),
                 request
         );
@@ -432,8 +431,6 @@ public class UserService {
         body.put("token_type", "Bearer");
 
         body.put("id_token", idToken);
-
-        body.put("user", userMapper.securityUserToUserResponseDto(securityUser));
 
         return body;
     }
