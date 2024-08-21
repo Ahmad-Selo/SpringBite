@@ -337,7 +337,7 @@ public class UserService {
                 .singletonMap("message", "Password have been changed successfully."));
     }
 
-    public ResponseEntity<?> updateUserDetails(Long userId, UpdateUserRequest updateUserRequest) {
+    public ResponseEntity<?> updateUser(Long userId, UpdateUserRequest updateUserRequest) {
         User user;
 
         try {

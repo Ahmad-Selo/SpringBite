@@ -83,7 +83,7 @@ public class UserController {
             @PathVariable("user-id") Long userId,
             @Valid @RequestBody UpdateUserRequest updateUserRequest
     ) {
-        return userService.updateUserDetails(userId, updateUserRequest);
+        return userService.updateUser(userId, updateUserRequest);
     }
 
     @PreAuthorize("#userId == authentication.principal.user.id")
