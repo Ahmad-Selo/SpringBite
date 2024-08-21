@@ -60,6 +60,14 @@ public class UserController {
         return userService.forgotPassword(forgotPasswordRequest);
     }
 
+    @PreAuthorize("#userId == authentication.principal.user.id or hasRole('ADMIN')")
+    @GetMapping("/accounts/{user-id}")
+    public ResponseEntity<?> getUser(
+            @PathVariable("user-id") Long userId
+    ) {
+        return userService.getUser(userId);
+    }
+
     @PreAuthorize("#userId == authentication.principal.user.id")
     @PutMapping("/accounts/{user-id}/change-password")
     public ResponseEntity<?> changePassword(

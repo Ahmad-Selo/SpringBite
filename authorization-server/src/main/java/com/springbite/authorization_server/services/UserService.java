@@ -2,6 +2,7 @@ package com.springbite.authorization_server.services;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.springbite.authorization_server.exceptions.UserNotFoundException;
 import com.springbite.authorization_server.mappers.UserMapper;
 import com.springbite.authorization_server.models.SecurityUser;
 import com.springbite.authorization_server.models.User;
@@ -296,6 +297,20 @@ public class UserService {
 
         return ResponseEntity.status(HttpStatus.OK).body(Collections
                 .singletonMap("message", "Password reset instruction have been sent to your email."));
+    }
+
+    public ResponseEntity<?> getUser(Long userId) {
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundException("User not found."));
+
+            UserResponseDto userResponseDto = userMapper.userToUserResponseDto(user);
+
+            return ResponseEntity.status(HttpStatus.OK).body(userResponseDto);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", e.getMessage()));
+        }
     }
 
     public ResponseEntity<?> changePassword(Long userId, ChangePasswordRequest changePasswordRequest) {

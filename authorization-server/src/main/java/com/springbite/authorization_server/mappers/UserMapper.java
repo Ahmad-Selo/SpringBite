@@ -36,17 +36,10 @@ public class UserMapper {
 
     public UserResponseDto userToUserResponseDto(User user) {
         return new UserResponseDto(
-                user.getId(),
                 user.getUsername(),
-                user.getRole()
-        );
-    }
-
-    public UserResponseDto securityUserToUserResponseDto(SecurityUser securityUser) {
-        return new UserResponseDto(
-                securityUser.getUser().getId(),
-                securityUser.getUsername(),
-                securityUser.getUser().getRole()
+                user.getFirstname(),
+                user.getLastname(),
+                user.getPhoneNumber()
         );
     }
 
