@@ -8,6 +8,9 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.springbite.authorization_server.entities.KeyPairEntity;
 import com.springbite.authorization_server.filters.ClientAuthFilter;
 import com.springbite.authorization_server.filters.JwtAuthFilter;
+import com.springbite.authorization_server.handlers.CustomAuthenticationFailureHandler;
+import com.springbite.authorization_server.handlers.CustomAuthenticationSuccessHandler;
+import com.springbite.authorization_server.models.SecurityUser;
 import com.springbite.authorization_server.repositories.JwkRepository;
 import com.springbite.authorization_server.repositories.KeyPairRepository;
 import com.springbite.authorization_server.services.JwkService;
@@ -24,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
@@ -47,14 +51,25 @@ import java.util.stream.Collectors;
 import static com.springbite.authorization_server.utils.KeyPairUtil.*;
 
 @Configuration
-@ConfigurationProperties(prefix = "trusted")
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
+    private final CustomAuthenticationFailureHandler authenticationFailureHandler;
+    private final RegisteredClientRepository registeredClientRepository;
     private final KeyPairRepository keyPairRepository;
     private final JwkRepository jwkRepository;
 
-    public SecurityConfig(KeyPairRepository keyPairRepository, JwkRepository jwkRepository) {
+    public SecurityConfig(
+            CustomAuthenticationSuccessHandler authenticationSuccessHandler,
+            CustomAuthenticationFailureHandler authenticationFailureHandler,
+            RegisteredClientRepository registeredClientRepository,
+            KeyPairRepository keyPairRepository,
+            JwkRepository jwkRepository
+    ) {
+        this.authenticationSuccessHandler = authenticationSuccessHandler;
+        this.authenticationFailureHandler = authenticationFailureHandler;
+        this.registeredClientRepository = registeredClientRepository;
         this.keyPairRepository = keyPairRepository;
         this.jwkRepository = jwkRepository;
     }
@@ -101,11 +116,11 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            RegisteredClientRepository registeredClientRepository)
-            throws Exception {
-        http.formLogin(Customizer.withDefaults());
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.formLogin(
+                c -> c.successHandler(authenticationSuccessHandler)
+                        .failureHandler(authenticationFailureHandler)
+        );
 
         http.authorizeHttpRequests(
                 c -> c.requestMatchers("/login", "/signup/**", "/auth/**").permitAll()
@@ -192,7 +207,15 @@ public class SecurityConfig {
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtCustomizer() {
         return context -> {
             Authentication authentication = context.getPrincipal();
+
+            SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
+
             JwtClaimsSet.Builder claims = context.getClaims();
+
+            if(OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())) {
+                claims.claim("uid", securityUser.getUser().getId());
+            }
+
             claims.claim("authorities",
                     authentication.getAuthorities().stream()
                             .map(GrantedAuthority::getAuthority)

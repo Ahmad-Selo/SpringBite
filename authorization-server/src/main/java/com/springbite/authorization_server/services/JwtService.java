@@ -59,6 +59,7 @@ public class JwtService {
             String sub,
             String clientId,
             long authTime,
+            Long uid,
             Collection<GrantedAuthority> authorities,
             HttpServletRequest request
     ) {
@@ -73,6 +74,8 @@ public class JwtService {
         idClaims.put("auth_time", authTime);
 
         idClaims.put("jti", UUID.randomUUID().toString());
+
+        idClaims.put("uid", uid);
 
         idClaims.put("authorities", authorities
                 .stream()
@@ -122,6 +125,7 @@ public class JwtService {
             String sub,
             String clientId,
             long authTime,
+            Long uid,
             Collection<GrantedAuthority> authorities,
             HttpServletRequest request
     ) throws JOSEException {
@@ -129,6 +133,7 @@ public class JwtService {
                 sub,
                 clientId,
                 authTime,
+                uid,
                 authorities,
                 request
         );

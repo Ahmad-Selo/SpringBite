@@ -13,9 +13,6 @@ public class UpdateUserRequest {
     @Email(regexp = emailRegex)
     private String username;
 
-    @Size(min = 8)
-    private String password;
-
     @Size(min = 1, max = 50)
     private String firstname;
 
@@ -28,9 +25,8 @@ public class UpdateUserRequest {
     public UpdateUserRequest() {
     }
 
-    public UpdateUserRequest(String username, String password, String firstname, String lastname, String phoneNumber) {
+    public UpdateUserRequest(String username, String firstname, String lastname, String phoneNumber) {
         this.username = username;
-        this.password = password;
         this.firstname = firstname;
         this.lastname = lastname;
         this.phoneNumber = phoneNumber;
@@ -42,14 +38,6 @@ public class UpdateUserRequest {
 
     public void setUsername(@Email(regexp = emailRegex) String username) {
         this.username = username;
-    }
-
-    public @Size(min = 8) String getPassword() {
-        return password;
-    }
-
-    public void setPassword(@Size(min = 8) String password) {
-        this.password = password;
     }
 
     public @Size(min = 1, max = 50) String getFirstname() {
@@ -82,7 +70,6 @@ public class UpdateUserRequest {
         if (o == null || getClass() != o.getClass()) return false;
         UpdateUserRequest that = (UpdateUserRequest) o;
         return Objects.equals(username, that.username) &&
-                Objects.equals(password, that.password) &&
                 Objects.equals(firstname, that.firstname) &&
                 Objects.equals(lastname, that.lastname) &&
                 Objects.equals(phoneNumber, that.phoneNumber);
@@ -92,7 +79,6 @@ public class UpdateUserRequest {
     public int hashCode() {
         return Objects.hash(
                 username,
-                password,
                 firstname,
                 lastname,
                 phoneNumber);
@@ -102,7 +88,6 @@ public class UpdateUserRequest {
     public String toString() {
         return "UpdateUserRequest{" +
                 "username='" + username + '\'' +
-                ", password='" + password + '\'' +
                 ", firstname='" + firstname + '\'' +
                 ", lastname='" + lastname + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
