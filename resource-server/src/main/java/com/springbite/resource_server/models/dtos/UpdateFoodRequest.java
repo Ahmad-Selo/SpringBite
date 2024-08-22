@@ -1,31 +1,27 @@
 package com.springbite.resource_server.models.dtos;
 
 import com.springbite.resource_server.models.Cuisine;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
-public class FoodDto {
+import java.util.Objects;
 
-    @NotBlank
+public class UpdateFoodRequest {
+
     private String name;
 
     private String description;
 
-    @NotNull
     private Double price;
 
-    @NotNull
     private Boolean available;
 
-    @NotNull
     private Boolean recommend;
 
     private Cuisine cuisine;
 
-    public FoodDto() {
+    public UpdateFoodRequest() {
     }
 
-    public FoodDto(
+    public UpdateFoodRequest(
             String name,
             String description,
             Double price,
@@ -41,11 +37,11 @@ public class FoodDto {
         this.cuisine = cuisine;
     }
 
-    public @NotBlank String getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(@NotBlank String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -57,27 +53,27 @@ public class FoodDto {
         this.description = description;
     }
 
-    public @NotNull Double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(@NotNull Double price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
-    public @NotNull Boolean getAvailable() {
+    public Boolean getAvailable() {
         return available;
     }
 
-    public void setAvailable(@NotNull Boolean available) {
+    public void setAvailable(Boolean available) {
         this.available = available;
     }
 
-    public @NotNull Boolean getRecommend() {
+    public Boolean getRecommend() {
         return recommend;
     }
 
-    public void setRecommend(@NotNull Boolean recommend) {
+    public void setRecommend(Boolean recommend) {
         this.recommend = recommend;
     }
 
@@ -87,5 +83,23 @@ public class FoodDto {
 
     public void setCuisine(Cuisine cuisine) {
         this.cuisine = cuisine;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UpdateFoodRequest that = (UpdateFoodRequest) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(price, that.price) &&
+                Objects.equals(available, that.available) &&
+                Objects.equals(recommend, that.recommend) &&
+                cuisine == that.cuisine;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, description, price, available, recommend, cuisine);
     }
 }

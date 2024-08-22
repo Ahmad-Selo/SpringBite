@@ -14,7 +14,7 @@ public class Rating {
     @ManyToOne
     private Food food;
 
-    private String username;
+    private Long userId;
 
     private Double ratingValue;
 
@@ -24,11 +24,18 @@ public class Rating {
     public Rating() {
     }
 
-    public Rating(Food food, String username, Double ratingValue) {
+    public Rating(Food food, Long userId, Double ratingValue) {
         this.food = food;
-        this.username = username;
+        this.userId = userId;
         this.ratingValue = ratingValue;
         this.createdAt = new Date();
+    }
+
+    public Rating(Food food, Long userId, Double ratingValue, Date createdAt) {
+        this.food = food;
+        this.userId = userId;
+        this.ratingValue = ratingValue;
+        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -47,12 +54,12 @@ public class Rating {
         this.food = food;
     }
 
-    public String getUsername() {
-        return username;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public Double getRatingValue() {
@@ -70,4 +77,6 @@ public class Rating {
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
+
+
 }

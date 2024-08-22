@@ -1,6 +1,7 @@
 package com.springbite.resource_server.controllers;
 
 import com.springbite.resource_server.models.dtos.FoodDto;
+import com.springbite.resource_server.models.dtos.UpdateFoodRequest;
 import com.springbite.resource_server.services.FoodService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -14,13 +15,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 @RestController
-@RequestMapping("/food")
+@RequestMapping("/foods")
 public class FoodController {
 
     private final FoodService foodService;
 
     public FoodController(FoodService foodService) {
         this.foodService = foodService;
+    }
+
+    @GetMapping("/all/available")
+    public ResponseEntity<?> allFoodAvailable() {
+        return foodService.allFoodAvailable();
+    }
+
+    @GetMapping("/{food-id}")
+    public ResponseEntity<?> getFood(
+            @PathVariable("food-id") Long foodId,
+            Authentication authentication
+    ) {
+        return foodService.getFood(foodId, authentication);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -30,21 +44,30 @@ public class FoodController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/delete/{food_name}")
-    public ResponseEntity<?> deleteFood(
-            @PathVariable("food_name") String foodName
+    @PatchMapping("/{food-id}/update")
+    public ResponseEntity<?> updateFood(
+            @PathVariable("food-id") Long foodId,
+            @Valid @RequestBody UpdateFoodRequest updateFoodRequest
     ) {
-        return foodService.deleteFood(foodName);
+        return foodService.updateFood(foodId, updateFoodRequest);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/delete/{food-id}")
+    public ResponseEntity<?> deleteFood(
+            @PathVariable("food-id") Long foodId
+    ) {
+        return foodService.deleteFood(foodId);
     }
 
     @PreAuthorize("hasRole('USER')")
-    @PostMapping("/{food_name}/rate")
+    @PostMapping("/{food-id}/rate")
     public ResponseEntity<?> rateFood(
             Authentication authentication,
-            @PathVariable("food_name") String foodName,
-            @RequestParam("rating_value") Double ratingValue
+            @PathVariable("food-id") Long foodId,
+            @RequestParam("rating-value") Double ratingValue
     ) {
-        return foodService.addRating(foodName, authentication.getName(), ratingValue);
+        return foodService.rateFood(foodId, authentication.getName(), ratingValue);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
