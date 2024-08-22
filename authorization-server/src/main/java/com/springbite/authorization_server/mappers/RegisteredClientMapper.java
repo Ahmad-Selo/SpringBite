@@ -4,8 +4,10 @@ import com.springbite.authorization_server.entities.RegisteredClientEntity;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.stream.Collectors;
 
 @Component
@@ -59,6 +61,12 @@ public class RegisteredClientMapper {
                                 .stream()
                                 .map(AuthorizationGrantType::new)
                                 .collect(Collectors.toSet())))
+
+                .tokenSettings(
+                        TokenSettings.builder()
+                                .accessTokenTimeToLive(Duration.ofHours(1))
+                                .build()
+                )
 
                 .redirectUris(
                         redirectUris -> redirectUris.addAll(entity.getRedirectUris()))
