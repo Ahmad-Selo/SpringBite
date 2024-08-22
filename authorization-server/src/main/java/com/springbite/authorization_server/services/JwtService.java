@@ -152,7 +152,7 @@ public class JwtService {
                 .setClaims(claims)
                 .setIssuer(issuer)
                 .setIssuedAt(date)
-                .setExpiration(new Date(date.getTime() + Duration.ofHours(3).toMillis()))
+                .setExpiration(new Date(date.getTime() + Duration.ofMinutes(30).toMillis()))
                 .signWith(rsaKey.toPrivateKey())
                 .compact();
     }
