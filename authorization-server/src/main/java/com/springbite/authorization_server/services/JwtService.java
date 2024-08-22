@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,62 +26,60 @@ public class JwtService {
         this.trustedIssuer = trustedIssuer;
     }
 
-    public TrustedIssuer getTrustedIssuer() {
-        return trustedIssuer;
+    private Map<String, Object> setCommonClaims(
+            String sub,
+            Long uid,
+            String aud,
+            Collection<GrantedAuthority> authorities
+    ) {
+        Map<String, Object> claims = new HashMap<>();
+
+        claims.put("sub", sub);
+
+        claims.put("uid", uid);
+
+        claims.put("aud", aud);
+
+        claims.put("jti", UUID.randomUUID().toString());
+
+        claims.put("authorities", authorities
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList())
+        );
+
+        return claims;
     }
 
     private Map<String, Object> setAccessClaims(
             String sub,
+            Long uid,
             String aud,
             Set<String> scopes,
             Collection<GrantedAuthority> authorities
     ) {
-        Map<String, Object> accessClaims = new HashMap<>();
-
-        accessClaims.put("sub", sub);
-
-        accessClaims.put("aud", aud);
+        Map<String, Object> accessClaims = setCommonClaims(sub, uid, aud, authorities);
 
         if (scopes != null && !scopes.isEmpty()) {
             accessClaims.put("scope", scopes);
         }
-
-        accessClaims.put("jti", UUID.randomUUID().toString());
-
-        accessClaims.put("authorities", authorities
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList()));
 
         return accessClaims;
     }
 
     private Map<String, Object> setIdClaims(
             String sub,
+            Long uid,
             String clientId,
             long authTime,
-            Long uid,
             Collection<GrantedAuthority> authorities,
             HttpServletRequest request
     ) {
-        Map<String, Object> idClaims = new HashMap<>();
-
-        idClaims.put("sub", sub);
-
-        idClaims.put("aud", clientId);
+        Map<String, Object> idClaims = setCommonClaims(sub, uid, clientId, authorities);
 
         idClaims.put("azp", clientId);
 
         idClaims.put("auth_time", authTime);
-
-        idClaims.put("jti", UUID.randomUUID().toString());
-
-        idClaims.put("uid", uid);
-
-        idClaims.put("authorities", authorities
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList()));
 
         idClaims.put("sid", request.getSession().getId());
 
@@ -90,12 +89,14 @@ public class JwtService {
     public String generateAccessToken(
             RSAKey rsaKey,
             String sub,
+            Long uid,
             String aud,
             Set<String> scopes,
             Collection<GrantedAuthority> authorities
     ) throws JOSEException {
         Map<String, Object> accessClaims = setAccessClaims(
                 sub,
+                uid,
                 aud,
                 scopes,
                 authorities
@@ -115,7 +116,7 @@ public class JwtService {
                 .setNotBefore(date)
                 .setIssuer(issuer)
                 .setIssuedAt(date)
-                .setExpiration(new Date(date.getTime() + 300000))
+                .setExpiration(new Date(date.getTime() + Duration.ofHours(1).toMillis()))
                 .signWith(rsaKey.toPrivateKey())
                 .compact();
     }
@@ -123,17 +124,17 @@ public class JwtService {
     public String generateIdToken(
             RSAKey rsaKey,
             String sub,
+            Long uid,
             String clientId,
             long authTime,
-            Long uid,
             Collection<GrantedAuthority> authorities,
             HttpServletRequest request
     ) throws JOSEException {
         Map<String, Object> idClaims = setIdClaims(
                 sub,
+                uid,
                 clientId,
                 authTime,
-                uid,
                 authorities,
                 request
         );
@@ -151,7 +152,7 @@ public class JwtService {
                 .setClaims(claims)
                 .setIssuer(issuer)
                 .setIssuedAt(date)
-                .setExpiration(new Date(date.getTime() + 1800000))
+                .setExpiration(new Date(date.getTime() + Duration.ofHours(3).toMillis()))
                 .signWith(rsaKey.toPrivateKey())
                 .compact();
     }

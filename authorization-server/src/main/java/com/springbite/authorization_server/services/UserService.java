@@ -416,6 +416,7 @@ public class UserService {
         String accessToken = jwtService.generateAccessToken(
                 rsaKey,
                 securityUser.getUsername(),
+                securityUser.getUser().getId(),
                 clientId,
                 scopes,
                 (Collection<GrantedAuthority>) securityUser.getAuthorities()
@@ -424,9 +425,9 @@ public class UserService {
         String idToken = jwtService.generateIdToken(
                 rsaKey,
                 securityUser.getUsername(),
+                securityUser.getUser().getId(),
                 clientId,
                 authTime,
-                securityUser.getUser().getId(),
                 (Collection<GrantedAuthority>) securityUser.getAuthorities(),
                 request
         );
