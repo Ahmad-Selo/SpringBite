@@ -1,10 +1,10 @@
 package com.springbite.authorization_server.controllers;
 
-import com.springbite.authorization_server.models.dtos.*;
+import com.springbite.authorization_server.models.dtos.ChangePasswordRequest;
+import com.springbite.authorization_server.models.dtos.DeleteUserRequest;
+import com.springbite.authorization_server.models.dtos.UpdateUserRequest;
 import com.springbite.authorization_server.services.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -14,14 +14,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.logging.Logger;
 
 @RestController
+@RequestMapping("/accounts")
 public class UserController {
-
-    private final Logger logger = Logger.getLogger(
-            UserController.class.getName()
-    );
 
     private final UserService userService;
 
@@ -29,39 +25,8 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(
-            @Valid @RequestBody UserDto dto,
-            HttpServletRequest request) {
-        return userService.signup(dto, request);
-    }
-
-    @PostMapping("/signup/{provider}")
-    public ResponseEntity<?> signupWithProvider(
-            @Valid @RequestBody SignupWithProviderRequest signupWithProviderRequest,
-            @PathVariable("provider") String provider,
-            HttpServletRequest request
-    ) {
-        return userService.signupWithProvider(signupWithProviderRequest, provider, request);
-    }
-
-    @PostMapping("/auth/{provider}")
-    public ResponseEntity<?> auth(
-            @PathVariable("provider") String provider,
-            @NotNull @RequestParam("scope") String scope,
-            HttpServletRequest request) {
-        return userService.auth(provider, scope, request);
-    }
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(
-            @Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest
-    ) {
-        return userService.forgotPassword(forgotPasswordRequest);
-    }
-
     @PreAuthorize("#userId == authentication.principal.user.id or hasRole('ADMIN')")
-    @GetMapping("/accounts/{user-id}")
+    @GetMapping("/{user-id}")
     public ResponseEntity<?> getUser(
             @PathVariable("user-id") Long userId
     ) {
@@ -69,7 +34,7 @@ public class UserController {
     }
 
     @PreAuthorize("#userId == authentication.principal.user.id")
-    @PutMapping("/accounts/{user-id}/change-password")
+    @PutMapping("/{user-id}/change-password")
     public ResponseEntity<?> changePassword(
             @PathVariable("user-id") Long userId,
             @Valid @RequestBody ChangePasswordRequest changePasswordRequest
@@ -78,7 +43,7 @@ public class UserController {
     }
 
     @PreAuthorize("#userId == authentication.principal.user.id")
-    @PatchMapping("/accounts/{user-id}/update")
+    @PatchMapping("/{user-id}/update")
     public ResponseEntity<?> updateUser(
             @PathVariable("user-id") Long userId,
             @Valid @RequestBody UpdateUserRequest updateUserRequest
@@ -87,7 +52,7 @@ public class UserController {
     }
 
     @PreAuthorize("#userId == authentication.principal.user.id")
-    @DeleteMapping("/accounts/{user-id}/delete")
+    @DeleteMapping("/{user-id}/delete")
     public ResponseEntity<?> deleteUser(
             @PathVariable("user-id") Long userId,
             @Valid @RequestBody DeleteUserRequest deleteUserRequest

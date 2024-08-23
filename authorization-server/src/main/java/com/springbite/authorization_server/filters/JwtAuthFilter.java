@@ -1,6 +1,5 @@
 package com.springbite.authorization_server.filters;
 
-import com.springbite.authorization_server.exceptions.InvalidJwt;
 import com.springbite.authorization_server.services.JwkService;
 import com.springbite.authorization_server.services.JwtService;
 import jakarta.servlet.*;
@@ -58,13 +57,13 @@ public class JwtAuthFilter implements Filter {
         String token = authHeader.substring(7);
 
         if (provider.equals("google")) {
-            RSAPublicKey publicKey = jwkService.google(token);
-
             try {
+                RSAPublicKey publicKey = jwkService.google(token);
+
                 jwtService.validateToken(token, publicKey);
 
                 chain.doFilter(httpRequest, httpResponse);
-            } catch (InvalidJwt e) {
+            } catch (Exception e) {
                 httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 httpResponse.getWriter().print(Collections
                         .singletonMap("error", e.getMessage()));

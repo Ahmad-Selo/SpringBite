@@ -53,40 +53,34 @@ public class JwkService {
         this.jwkSetResponse = jwkSetResponse;
     }
 
-    public RSAPublicKey google(String token) {
+    public RSAPublicKey google(String token) throws Exception {
         String baseUrl = "https://www.googleapis.com";
         String uri = "/oauth2/v3/certs";
+        JWT jwt = JWTParser.parse(token);
 
-        try {
-            JWT jwt = JWTParser.parse(token);
+        String kid = (String) jwt.getHeader().toJSONObject().get("kid");
 
-            String kid = (String) jwt.getHeader().toJSONObject().get("kid");
-
-            if (kid == null) {
-                throw new InvalidBearerTokenException("Invalid token");
-            }
-
-            Optional<JwkEntity> jwkEntityOptional = jwkRepository.findById(kid);
-
-            if (jwkEntityOptional.isPresent()) {
-                JwkEntity jwkEntity = jwkEntityOptional.get();
-                return decodePublicKey(jwkEntity.getPublicKey());
-            }
-
-            RSAPublicKey publicKey = retrievePublicKey(baseUrl, uri, kid);
-
-            JwkEntity jwkEntity = new JwkEntity(
-                    kid,
-                    encodePublicKey(publicKey)
-            );
-
-            jwkRepository.save(jwkEntity);
-
-            return publicKey;
-
-        } catch (Exception e) {
-            throw new InvalidBearerTokenException("Invalid token");
+        if (kid == null) {
+            throw new InvalidBearerTokenException("Invalid token!");
         }
+
+        Optional<JwkEntity> jwkEntityOptional = jwkRepository.findById(kid);
+
+        if (jwkEntityOptional.isPresent()) {
+            JwkEntity jwkEntity = jwkEntityOptional.get();
+            return decodePublicKey(jwkEntity.getPublicKey());
+        }
+
+        RSAPublicKey publicKey = retrievePublicKey(baseUrl, uri, kid);
+
+        JwkEntity jwkEntity = new JwkEntity(
+                kid,
+                encodePublicKey(publicKey)
+        );
+
+        jwkRepository.save(jwkEntity);
+
+        return publicKey;
     }
 
     private RSAPublicKey retrievePublicKey(String baseUrl, String uri, String kid) throws Exception {
@@ -103,7 +97,7 @@ public class JwkService {
                 .body(JwkSetResponse.class);
 
         if (jwkSetResponse == null) {
-            throw new AccessDeniedException("Couldn't get jwks");
+            throw new AccessDeniedException("Couldn't get jwk set!");
         }
 
         return findJwkSetByKid(jwkSetResponse, kid);
@@ -112,9 +106,9 @@ public class JwkService {
     private JwkSet findJwkSetByKid(JwkSetResponse jwkSetResponse, String kid) {
         return jwkSetResponse.getKeys()
                 .stream()
-                .filter(jwks -> kid.equals(jwks.getKid()))
+                .filter(jwk -> kid.equals(jwk.getKid()))
                 .findFirst()
-                .orElseThrow(() -> new InvalidKeyException("Failed to retrieve jwks"));
+                .orElseThrow(() -> new InvalidKeyException("Failed to retrieve jwk set."));
     }
 
     private RSAPublicKey generateRSAPublicKey(JwkSet jwkSet) throws NoSuchAlgorithmException, InvalidKeySpecException {

@@ -4,6 +4,8 @@ import java.util.Objects;
 
 public class UserResponseDto {
 
+    private Long id;
+
     private String username;
 
     private String firstname;
@@ -15,11 +17,20 @@ public class UserResponseDto {
     public UserResponseDto() {
     }
 
-    public UserResponseDto(String username, String firstname, String lastname, String phoneNumber) {
+    public UserResponseDto(Long id, String username, String firstname, String lastname, String phoneNumber) {
+        this.id = id;
         this.username = username;
         this.firstname = firstname;
         this.lastname = lastname;
         this.phoneNumber = phoneNumber;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getUsername() {
@@ -59,7 +70,8 @@ public class UserResponseDto {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserResponseDto that = (UserResponseDto) o;
-        return Objects.equals(username, that.username) &&
+        return Objects.equals(id, that.id) &&
+                Objects.equals(username, that.username) &&
                 Objects.equals(firstname, that.firstname) &&
                 Objects.equals(lastname, that.lastname) &&
                 Objects.equals(phoneNumber, that.phoneNumber);
@@ -67,13 +79,14 @@ public class UserResponseDto {
 
     @Override
     public int hashCode() {
-        return Objects.hash(username, firstname, lastname, phoneNumber);
+        return Objects.hash(id, username, firstname, lastname, phoneNumber);
     }
 
     @Override
     public String toString() {
         return "UserResponseDto{" +
-                "username='" + username + '\'' +
+                "id=" + id +
+                ", username='" + username + '\'' +
                 ", firstname='" + firstname + '\'' +
                 ", lastname='" + lastname + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
