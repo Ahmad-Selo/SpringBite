@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 @RestController
-@RequestMapping("/auth")
 public class AuthController {
 
     private final AuthService authService;
@@ -42,7 +41,7 @@ public class AuthController {
         return authService.signupWithProvider(signupWithProviderRequest, provider, request);
     }
 
-    @PostMapping("/login/{provider}")
+    @PostMapping("/auth/{provider}")
     public ResponseEntity<?> auth(
             @PathVariable("provider") String provider,
             HttpServletRequest request
