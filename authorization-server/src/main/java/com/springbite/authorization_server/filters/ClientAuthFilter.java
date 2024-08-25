@@ -33,7 +33,7 @@ public class ClientAuthFilter implements Filter {
 
         String uri = httpRequest.getRequestURI();
 
-        if (!uri.equals("/signup")) {
+        if (!uri.equals("/signup") && !uri.equals("/csrf")) {
             chain.doFilter(httpRequest, httpResponse);
             return;
         }
