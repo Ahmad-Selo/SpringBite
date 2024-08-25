@@ -130,6 +130,7 @@ public class AuthService {
         String username;
         String firstname;
         String lastname;
+        String picture;
 
         if (provider.equals("google")) {
             try {
@@ -143,6 +144,9 @@ public class AuthService {
 
                 lastname = (String) jwtService.extractClaim(token, publicKey,
                         "family_name");
+
+                picture = (String) jwtService.extractClaim(token, publicKey,
+                        "picture");
 
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
@@ -168,7 +172,8 @@ public class AuthService {
                     encodedPassword,
                     firstname,
                     lastname,
-                    signupWithProviderRequest.getPhoneNumber()
+                    signupWithProviderRequest.getPhoneNumber(),
+                    picture
             );
 
             user = userMapper.userDtoToUser(dto);

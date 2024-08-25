@@ -23,4 +23,3 @@ csrf:
     - /login
     - /signup/**
     - /auth/**
-    - /accounts/**

@@ -37,6 +37,7 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -122,7 +123,7 @@ public class SecurityConfig {
         );
 
         http.authorizeHttpRequests(
-                c -> c.requestMatchers("/login", "/signup/**", "/auth/**").permitAll()
+                c -> c.requestMatchers("/login", "/csrf", "/signup/**", "/auth/**").permitAll()
                         .anyRequest().authenticated()
         );
 
@@ -137,7 +138,8 @@ public class SecurityConfig {
         );
 
         http.csrf(
-                c -> c.ignoringRequestMatchers(csrfWhiteSet().whiteSetUris.toArray(new String[0]))
+                c -> c.csrfTokenRepository(new HttpSessionCsrfTokenRepository())
+                        .ignoringRequestMatchers(csrfWhiteSet().whiteSetUris.toArray(new String[0]))
         );
 
         return http.build();

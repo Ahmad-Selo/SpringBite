@@ -18,6 +18,7 @@ public class UserMapper {
                 dto.getFirstname(),
                 dto.getLastname(),
                 dto.getPhoneNumber(),
+                dto.getPicture(),
                 ROLE_USER,
                 true,
                 true
@@ -30,7 +31,8 @@ public class UserMapper {
                 user.getPassword(),
                 user.getFirstname(),
                 user.getLastname(),
-                user.getPhoneNumber()
+                user.getPhoneNumber(),
+                user.getPicture()
         );
     }
 
@@ -40,7 +42,8 @@ public class UserMapper {
                 user.getUsername(),
                 user.getFirstname(),
                 user.getLastname(),
-                user.getPhoneNumber()
+                user.getPhoneNumber(),
+                user.getPicture()
         );
     }
 

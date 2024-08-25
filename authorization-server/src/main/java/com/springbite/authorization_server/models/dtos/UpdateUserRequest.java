@@ -22,14 +22,17 @@ public class UpdateUserRequest {
     @Size(min = 10, max = 15)
     private String phoneNumber;
 
+    private String picture;
+
     public UpdateUserRequest() {
     }
 
-    public UpdateUserRequest(String username, String firstname, String lastname, String phoneNumber) {
+    public UpdateUserRequest(String username, String firstname, String lastname, String phoneNumber, String picture) {
         this.username = username;
         this.firstname = firstname;
         this.lastname = lastname;
         this.phoneNumber = phoneNumber;
+        this.picture = picture;
     }
 
     public @Email(regexp = emailRegex) String getUsername() {
@@ -64,6 +67,14 @@ public class UpdateUserRequest {
         this.phoneNumber = phoneNumber;
     }
 
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -72,25 +83,24 @@ public class UpdateUserRequest {
         return Objects.equals(username, that.username) &&
                 Objects.equals(firstname, that.firstname) &&
                 Objects.equals(lastname, that.lastname) &&
-                Objects.equals(phoneNumber, that.phoneNumber);
+                Objects.equals(phoneNumber, that.phoneNumber) &&
+                Objects.equals(picture, that.picture);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-                username,
-                firstname,
-                lastname,
-                phoneNumber);
+        return Objects.hash(username, firstname, lastname, phoneNumber, picture);
     }
 
     @Override
     public String toString() {
         return "UpdateUserRequest{" +
-                "username='" + username + '\'' +
+                "emailRegex='" + emailRegex + '\'' +
+                ", username='" + username + '\'' +
                 ", firstname='" + firstname + '\'' +
                 ", lastname='" + lastname + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
+                ", picture='" + picture + '\'' +
                 '}';
     }
 }

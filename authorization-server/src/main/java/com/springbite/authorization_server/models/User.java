@@ -28,6 +28,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    private String picture;
+
     private boolean nonLocked;
 
     private boolean enabled;
@@ -35,28 +37,32 @@ public class User {
     public User() {
     }
 
-    public User(String username, String password, String firstname, String lastname, String phoneNumber) {
+    public User(String username, String password, String firstname, String lastname, String phoneNumber, String picture) {
         this.username = username;
         this.password = password;
         this.firstname = firstname;
         this.lastname = lastname;
         this.phoneNumber = phoneNumber;
+        this.picture = picture;
     }
 
-    public User(String username,
-                String password,
-                String firstname,
-                String lastname,
-                String phoneNumber,
-                Role role,
-                boolean nonLocked,
-                boolean enabled
+    public User(
+            String username,
+            String password,
+            String firstname,
+            String lastname,
+            String phoneNumber,
+            String picture,
+            Role role,
+            boolean nonLocked,
+            boolean enabled
     ) {
         this.username = username;
         this.password = password;
         this.firstname = firstname;
         this.lastname = lastname;
         this.phoneNumber = phoneNumber;
+        this.picture = picture;
         this.role = role;
         this.nonLocked = nonLocked;
         this.enabled = enabled;
@@ -110,6 +116,14 @@ public class User {
         this.phoneNumber = phoneNumber;
     }
 
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
+
     public Role getRole() {
         return role;
     }
@@ -143,12 +157,32 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return nonLocked == user.nonLocked && enabled == user.enabled && Objects.equals(id, user.id) && Objects.equals(username, user.username) && Objects.equals(password, user.password) && Objects.equals(firstname, user.firstname) && Objects.equals(lastname, user.lastname) && Objects.equals(phoneNumber, user.phoneNumber) && role == user.role;
+        return nonLocked == user.nonLocked &&
+                enabled == user.enabled &&
+                Objects.equals(id, user.id) &&
+                Objects.equals(username, user.username) &&
+                Objects.equals(password, user.password) &&
+                Objects.equals(firstname, user.firstname) &&
+                Objects.equals(lastname, user.lastname) &&
+                Objects.equals(phoneNumber, user.phoneNumber) &&
+                role == user.role &&
+                Objects.equals(picture, user.picture);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, username, password, firstname, lastname, phoneNumber, role, nonLocked, enabled);
+        return Objects.hash(
+                id,
+                username,
+                password,
+                firstname,
+                lastname,
+                phoneNumber,
+                role,
+                picture,
+                nonLocked,
+                enabled
+        );
     }
 
     @Override
@@ -161,6 +195,7 @@ public class User {
                 ", lastname='" + lastname + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", role=" + role +
+                ", imagePath='" + picture + '\'' +
                 ", nonLocked=" + nonLocked +
                 ", enabled=" + enabled +
                 '}';

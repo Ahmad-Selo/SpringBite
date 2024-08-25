@@ -25,7 +25,8 @@ class UserMapperTest {
                 "password",
                 "Ahmad",
                 "Selo",
-                "0981227881"
+                "0981227881",
+                "/image"
         );
 
         User user = userMapper.userDtoToUser(dto);
@@ -45,6 +46,7 @@ class UserMapperTest {
                 "Ahmad",
                 "Selo",
                 "0981227881",
+                "/image",
                 ROLE_USER,
                 true,
                 true

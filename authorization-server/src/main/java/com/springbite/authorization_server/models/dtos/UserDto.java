@@ -26,15 +26,25 @@ public class UserDto {
     @NotBlank
     private String phoneNumber;
 
+    @NotBlank
+    private String picture;
+
     public UserDto() {
     }
 
-    public UserDto(String username, String password, String firstname, String lastname, String phoneNumber) {
+    public UserDto(String username,
+                   String password,
+                   String firstname,
+                   String lastname,
+                   String phoneNumber,
+                   String picture
+    ) {
         this.username = username;
         this.password = password;
         this.firstname = firstname;
         this.lastname = lastname;
         this.phoneNumber = phoneNumber;
+        this.picture = picture;
     }
 
     public @Email(regexp = emailRegex) @NotBlank String getUsername() {
@@ -77,6 +87,14 @@ public class UserDto {
         this.phoneNumber = phoneNumber;
     }
 
+    public @NotBlank String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(@NotBlank String picture) {
+        this.picture = picture;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -86,22 +104,25 @@ public class UserDto {
                 Objects.equals(password, dto.password) &&
                 Objects.equals(firstname, dto.firstname) &&
                 Objects.equals(lastname, dto.lastname) &&
-                Objects.equals(phoneNumber, dto.phoneNumber);
+                Objects.equals(phoneNumber, dto.phoneNumber) &&
+                Objects.equals(picture, dto.picture);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(username, password, firstname, lastname, phoneNumber);
+        return Objects.hash(username, password, firstname, lastname, phoneNumber, picture);
     }
 
     @Override
     public String toString() {
         return "UserDto{" +
-                "username='" + username + '\'' +
+                "emailRegex='" + emailRegex + '\'' +
+                ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", firstname='" + firstname + '\'' +
                 ", lastname='" + lastname + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
+                ", imagePath='" + picture + '\'' +
                 '}';
     }
 }
