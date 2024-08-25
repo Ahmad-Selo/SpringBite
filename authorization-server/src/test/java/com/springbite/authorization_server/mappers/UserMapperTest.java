@@ -26,7 +26,7 @@ class UserMapperTest {
                 "Ahmad",
                 "Selo",
                 "0981227881",
-                "/image"
+                "/picture"
         );
 
         User user = userMapper.userDtoToUser(dto);
@@ -36,6 +36,7 @@ class UserMapperTest {
         assertEquals(dto.getFirstname(), user.getFirstname());
         assertEquals(dto.getLastname(), user.getLastname());
         assertEquals(dto.getPhoneNumber(), user.getPhoneNumber());
+        assertEquals(dto.getPicture(), user.getPicture());
     }
 
     @Test
