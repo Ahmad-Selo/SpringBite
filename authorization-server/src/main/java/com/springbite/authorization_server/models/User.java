@@ -1,8 +1,11 @@
 package com.springbite.authorization_server.models;
 
+import com.springbite.authorization_server.entities.ConfirmationCode;
+import com.springbite.authorization_server.entities.PasswordResetCode;
 import com.springbite.authorization_server.security.Role;
 import jakarta.persistence.*;
 
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -30,6 +33,14 @@ public class User {
 
     private String picture;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<ConfirmationCode> confirmationCodes;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<PasswordResetCode> passwordResetCodes;
+
+    private boolean emailVerified;
+
     private boolean nonLocked;
 
     private boolean enabled;
@@ -54,6 +65,7 @@ public class User {
             String phoneNumber,
             String picture,
             Role role,
+            boolean emailVerified,
             boolean nonLocked,
             boolean enabled
     ) {
@@ -64,6 +76,7 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.picture = picture;
         this.role = role;
+        this.emailVerified = emailVerified;
         this.nonLocked = nonLocked;
         this.enabled = enabled;
     }
@@ -132,6 +145,30 @@ public class User {
         this.role = role;
     }
 
+    public List<ConfirmationCode> getConfirmationCodes() {
+        return confirmationCodes;
+    }
+
+    public void setConfirmationCodes(List<ConfirmationCode> confirmationCodes) {
+        this.confirmationCodes = confirmationCodes;
+    }
+
+    public List<PasswordResetCode> getPasswordResetCodes() {
+        return passwordResetCodes;
+    }
+
+    public void setPasswordResetCodes(List<PasswordResetCode> passwordResetCodes) {
+        this.passwordResetCodes = passwordResetCodes;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
     public boolean isNonLocked() {
         return nonLocked;
     }
@@ -157,7 +194,8 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return nonLocked == user.nonLocked &&
+        return emailVerified == user.emailVerified &&
+                nonLocked == user.nonLocked &&
                 enabled == user.enabled &&
                 Objects.equals(id, user.id) &&
                 Objects.equals(username, user.username) &&
@@ -180,6 +218,7 @@ public class User {
                 phoneNumber,
                 role,
                 picture,
+                emailVerified,
                 nonLocked,
                 enabled
         );
@@ -195,7 +234,8 @@ public class User {
                 ", lastname='" + lastname + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", role=" + role +
-                ", imagePath='" + picture + '\'' +
+                ", picture='" + picture + '\'' +
+                ", emailVerified=" + emailVerified +
                 ", nonLocked=" + nonLocked +
                 ", enabled=" + enabled +
                 '}';

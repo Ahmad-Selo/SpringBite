@@ -23,3 +23,10 @@ csrf:
     - /login
     - /signup/**
     - /auth/**
+
+email:
+  from: contact@springbite.com
+  support: support@springbite.com
+
+website:
+  url: https://www.springbite.com

@@ -25,6 +25,23 @@ public class UserController {
         this.userService = userService;
     }
 
+    @PreAuthorize("#userId == authentication.principal.user.id")
+    @PostMapping("/{user-id}/send-email-code")
+    public ResponseEntity<?> sendEmailCode(
+            @PathVariable("user-id") Long userId
+    ) {
+        return userService.sendEmailCode(userId);
+    }
+
+    @PreAuthorize("#userId == authentication.principal.user.id")
+    @PostMapping("/{user-id}/confirm-email")
+    public ResponseEntity<?> confirmEmail(
+            @PathVariable("user-id") Long userId,
+            @RequestParam("code") String code
+    ) {
+        return userService.confirmEmail(userId, code);
+    }
+
     @PreAuthorize("#userId == authentication.principal.user.id or hasRole('ADMIN')")
     @GetMapping("/{user-id}")
     public ResponseEntity<?> getUser(

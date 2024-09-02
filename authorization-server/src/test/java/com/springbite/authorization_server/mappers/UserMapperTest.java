@@ -29,7 +29,7 @@ class UserMapperTest {
                 "/picture"
         );
 
-        User user = userMapper.userDtoToUser(dto);
+        User user = userMapper.userDtoToUser(dto, true);
 
         assertEquals(dto.getUsername(), user.getUsername());
         assertEquals(dto.getPassword(), user.getPassword());
@@ -49,6 +49,7 @@ class UserMapperTest {
                 "0981227881",
                 "/image",
                 ROLE_USER,
+                true,
                 true,
                 true
         );

@@ -11,7 +11,7 @@ import static com.springbite.authorization_server.security.Role.ROLE_USER;
 @Component
 public class UserMapper {
 
-    public User userDtoToUser(UserDto dto) {
+    public User userDtoToUser(UserDto dto, boolean emailVerified) {
         return new User(
                 dto.getUsername(),
                 dto.getPassword(),
@@ -20,6 +20,7 @@ public class UserMapper {
                 dto.getPhoneNumber(),
                 dto.getPicture(),
                 ROLE_USER,
+                emailVerified,
                 true,
                 true
         );

@@ -1,18 +1,20 @@
 package com.springbite.authorization_server.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
+import jakarta.persistence.*;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
+@Table(name = "key_pairs")
 public class KeyPairEntity {
 
     @Id
     @GeneratedValue
     private Long id;
+
+    @Column(unique = true)
+    private String kid;
 
     @Lob
     private String publicKey;
@@ -24,6 +26,13 @@ public class KeyPairEntity {
     }
 
     public KeyPairEntity(String publicKey, String privateKey) {
+        this.kid = UUID.randomUUID().toString();
+        this.publicKey = publicKey;
+        this.privateKey = privateKey;
+    }
+
+    public KeyPairEntity(String kid, String publicKey, String privateKey) {
+        this.kid = kid;
         this.publicKey = publicKey;
         this.privateKey = privateKey;
     }
@@ -34,6 +43,14 @@ public class KeyPairEntity {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getKid() {
+        return kid;
+    }
+
+    public void setKid(String kid) {
+        this.kid = kid;
     }
 
     public String getPublicKey() {
@@ -57,11 +74,24 @@ public class KeyPairEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         KeyPairEntity that = (KeyPairEntity) o;
-        return Objects.equals(id, that.id) && Objects.equals(publicKey, that.publicKey) && Objects.equals(privateKey, that.privateKey);
+        return Objects.equals(id, that.id) &&
+                Objects.equals(kid, that.kid) &&
+                Objects.equals(publicKey, that.publicKey) &&
+                Objects.equals(privateKey, that.privateKey);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, publicKey, privateKey);
+        return Objects.hash(id, kid, publicKey, privateKey);
+    }
+
+    @Override
+    public String toString() {
+        return "KeyPairEntity{" +
+                "id=" + id +
+                ", kid='" + kid + '\'' +
+                ", publicKey='" + publicKey + '\'' +
+                ", privateKey='" + privateKey + '\'' +
+                '}';
     }
 }

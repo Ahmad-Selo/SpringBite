@@ -1,5 +1,6 @@
 package com.springbite.authorization_server.filters;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,6 +17,8 @@ public class ClientAuthFilter implements Filter {
     private final RegisteredClientRepository registeredClientRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ClientAuthFilter(RegisteredClientRepository registeredClientRepository, PasswordEncoder passwordEncoder) {
         this.registeredClientRepository = registeredClientRepository;
@@ -41,9 +44,12 @@ public class ClientAuthFilter implements Filter {
         String authHeader = httpRequest.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Basic ")) {
-            httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            httpResponse.getWriter().print(Collections
+            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            httpResponse.setContentType("application/json");
+
+            String body = objectMapper.writeValueAsString(Collections
                     .singletonMap("error", "Authorization header missing or invalid."));
+            httpResponse.getWriter().write(body);
             return;
         }
 
@@ -59,8 +65,11 @@ public class ClientAuthFilter implements Filter {
 
         if (registeredClient == null || !passwordEncoder.matches(clientSecret, registeredClient.getClientSecret())) {
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            httpResponse.getWriter().print(Collections
+            httpResponse.setContentType("application/json");
+
+            String body = objectMapper.writeValueAsString(Collections
                     .singletonMap("error", "Invalid client credentials."));
+            httpResponse.getWriter().write(body);
             return;
         }
         chain.doFilter(httpRequest, httpResponse);

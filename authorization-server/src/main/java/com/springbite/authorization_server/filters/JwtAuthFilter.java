@@ -1,5 +1,6 @@
 package com.springbite.authorization_server.filters;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springbite.authorization_server.services.JwkService;
 import com.springbite.authorization_server.services.JwtService;
 import jakarta.servlet.*;
@@ -15,6 +16,8 @@ public class JwtAuthFilter implements Filter {
     private final JwtService jwtService;
 
     private final JwkService jwkService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public JwtAuthFilter(JwtService jwtService, JwkService jwkService) {
         this.jwtService = jwtService;
@@ -48,9 +51,12 @@ public class JwtAuthFilter implements Filter {
         String authHeader = httpRequest.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            httpResponse.getWriter().print(Collections
+            httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            httpResponse.setContentType("application/json");
+
+            String body = objectMapper.writeValueAsString(Collections
                     .singletonMap("error", "Bearer token is missing"));
+            httpResponse.getWriter().write(body);
             return;
         }
 
@@ -65,13 +71,19 @@ public class JwtAuthFilter implements Filter {
                 chain.doFilter(httpRequest, httpResponse);
             } catch (Exception e) {
                 httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                httpResponse.getWriter().print(Collections
+                httpResponse.setContentType("application/json");
+
+                String body = objectMapper.writeValueAsString(Collections
                         .singletonMap("error", e.getMessage()));
+                httpResponse.getWriter().write(body);
             }
         } else {
             httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            httpResponse.getWriter().print(Collections
+            httpResponse.setContentType("application/json");
+
+            String body = objectMapper.writeValueAsString(Collections
                     .singletonMap("error", "Invalid provider."));
+            httpResponse.getWriter().write(body);
         }
     }
 }

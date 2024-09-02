@@ -1,9 +1,8 @@
 package com.springbite.authorization_server.controllers;
 
-import com.springbite.authorization_server.models.dtos.SignupWithProviderRequest;
-import com.springbite.authorization_server.models.dtos.UserDto;
-import com.springbite.authorization_server.services.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.springbite.authorization_server.models.dtos.PasswordForgotRequest;
+import com.springbite.authorization_server.models.dtos.PasswordResetRequest;
+import com.springbite.authorization_server.services.PasswordRecoveryService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,37 +14,34 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 @RestController
-public class AuthController {
+public class PasswordRecoveryController {
 
-    private final AuthService authService;
+    private final PasswordRecoveryService passwordRecoveryService;
 
-    public AuthController(AuthService authService) {
-        this.authService = authService;
+    public PasswordRecoveryController(PasswordRecoveryService passwordRecoveryService) {
+        this.passwordRecoveryService = passwordRecoveryService;
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(
-            @Valid @RequestBody UserDto dto,
-            HttpServletRequest request
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(
+            @Valid @RequestBody PasswordForgotRequest passwordForgotRequest
     ) {
-        return authService.signup(dto, request);
+        return passwordRecoveryService.forgotPassword(passwordForgotRequest);
     }
 
-    @PostMapping("/signup/{provider}")
-    public ResponseEntity<?> signupWithProvider(
-            @Valid @RequestBody SignupWithProviderRequest signupWithProviderRequest,
-            @PathVariable("provider") String provider,
-            HttpServletRequest request
+    @PostMapping("/verify-code")
+    public ResponseEntity<?> verifyCode(
+            @RequestParam("code") String code
     ) {
-        return authService.signupWithProvider(signupWithProviderRequest, provider, request);
+        return passwordRecoveryService.verifyCode(code);
     }
 
-    @PostMapping("/auth/{provider}")
-    public ResponseEntity<?> auth(
-            @PathVariable("provider") String provider,
-            HttpServletRequest request
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> restPassword(
+            @RequestParam("token") String token,
+            @Valid @RequestBody PasswordResetRequest passwordResetRequest
     ) {
-        return authService.auth(provider, request);
+        return passwordRecoveryService.restPassword(token, passwordResetRequest);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

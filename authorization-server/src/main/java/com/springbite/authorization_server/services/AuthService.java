@@ -1,14 +1,16 @@
 package com.springbite.authorization_server.services;
 
+import com.springbite.authorization_server.entities.ConfirmationCode;
 import com.springbite.authorization_server.mappers.UserMapper;
 import com.springbite.authorization_server.models.SecurityUser;
 import com.springbite.authorization_server.models.User;
-import com.springbite.authorization_server.models.dtos.ForgotPasswordRequest;
 import com.springbite.authorization_server.models.dtos.SignupWithProviderRequest;
 import com.springbite.authorization_server.models.dtos.UserDto;
 import com.springbite.authorization_server.models.dtos.UserResponseDto;
+import com.springbite.authorization_server.repositories.ConfirmationCodeRepository;
 import com.springbite.authorization_server.repositories.UserRepository;
 import com.springbite.authorization_server.security.PasswordGenerator;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
@@ -32,6 +34,8 @@ public class AuthService {
 
     private final UserRepository userRepository;
 
+    private final ConfirmationCodeRepository confirmationCodeRepository;
+
     private final UserMapper userMapper;
 
     private final PasswordEncoder passwordEncoder;
@@ -42,20 +46,26 @@ public class AuthService {
 
     private final JwtService jwtService;
 
+    private final EmailService emailService;
+
     public AuthService(
             UserRepository userRepository,
+            ConfirmationCodeRepository confirmationCodeRepository,
             UserMapper userMapper,
             PasswordEncoder passwordEncoder,
             PasswordGenerator passwordGenerator,
             JwkService jwkService,
-            JwtService jwtService
+            JwtService jwtService,
+            EmailService emailService
     ) {
         this.userRepository = userRepository;
+        this.confirmationCodeRepository = confirmationCodeRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.passwordGenerator = passwordGenerator;
         this.jwkService = jwkService;
         this.jwtService = jwtService;
+        this.emailService = emailService;
     }
 
     public boolean isUsernameAlreadyExist(String username) {
@@ -105,17 +115,32 @@ public class AuthService {
 
         dto.setPassword(encodedPassword);
 
-        User user = userMapper.userDtoToUser(dto);
+        User user = userMapper.userDtoToUser(dto, false);
 
         User savedUser = userRepository.save(user);
+
+        ConfirmationCode confirmationCode = new ConfirmationCode(savedUser);
+
+        confirmationCodeRepository.save(confirmationCode);
+
+        try {
+            emailService.sendConfirmationEmail(
+                    savedUser.getUsername(),
+                    savedUser.getFirstname(),
+                    confirmationCode.getCode()
+            );
+        } catch (MessagingException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", "Failed to send confirmation email."));
+        }
 
         SecurityUser securityUser = userMapper.userToSecurityUser(savedUser);
 
         authenticateUser(securityUser, request);
 
-        UserResponseDto userResponseDto = userMapper.userToUserResponseDto(savedUser);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(userResponseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Collections
+                .singletonMap("message", "Signup successful. A confirmation email has been sent.")
+        );
     }
 
     public ResponseEntity<?> signupWithProvider(
@@ -131,6 +156,7 @@ public class AuthService {
         String firstname;
         String lastname;
         String picture;
+        boolean emailVerified;
 
         if (provider.equals("google")) {
             try {
@@ -144,6 +170,9 @@ public class AuthService {
 
                 lastname = (String) jwtService.extractClaim(token, publicKey,
                         "family_name");
+
+                emailVerified = (Boolean) jwtService.extractClaim(token, publicKey,
+                        "email_verified");
 
                 picture = (String) jwtService.extractClaim(token, publicKey,
                         "picture");
@@ -176,7 +205,7 @@ public class AuthService {
                     picture
             );
 
-            user = userMapper.userDtoToUser(dto);
+            user = userMapper.userDtoToUser(dto, emailVerified);
 
             savedUser = userRepository.save(user);
         } else {
@@ -232,15 +261,4 @@ public class AuthService {
 
         return ResponseEntity.status(HttpStatus.OK).body(userResponseDto);
     }
-
-    public ResponseEntity<?> forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
-        if (!isUsernameAlreadyExist(forgotPasswordRequest.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", "User with this email does not exist."));
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(Collections
-                .singletonMap("message", "Password reset instruction have been sent to your email."));
-    }
-
 }
