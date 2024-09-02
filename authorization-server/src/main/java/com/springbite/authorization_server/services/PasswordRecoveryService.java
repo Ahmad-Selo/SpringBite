@@ -114,7 +114,7 @@ public class PasswordRecoveryService {
         long expiresIn = passwordResetToken.getExpiresAt().toInstant().getEpochSecond() - Instant.now().getEpochSecond();
 
         Map<String, Object> body = Map.of(
-                "rest_token", passwordResetToken.getToken(),
+                "reset_token", passwordResetToken.getToken(),
                 "expires_in", expiresIn
         );
 
