@@ -6,7 +6,6 @@
       <list>
         <option value="$PROJECT_DIR$/resource-server/pom.xml" />
         <option value="$PROJECT_DIR$/authorization-server/pom.xml" />
-        <option value="$PROJECT_DIR$/client-server/pom.xml" />
       </list>
     </option>
   </component>
