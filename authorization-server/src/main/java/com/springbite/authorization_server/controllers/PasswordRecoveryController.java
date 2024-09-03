@@ -6,7 +6,6 @@ import com.springbite.authorization_server.services.PasswordRecoveryService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,13 +57,5 @@ public class PasswordRecoveryController {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
                 .singletonMap("error", errors));
-    }
-
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<?> handleHttpMessageNotReadableException(
-            HttpMessageNotReadableException exception
-    ) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                .singletonMap("error", "Missing body."));
     }
 }
