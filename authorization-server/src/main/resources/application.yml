@@ -12,6 +12,9 @@ spring:
       ddl-auto: update
     database: postgresql
 
+jwk:
+  kid: cefd2ddd-07f5-474a-82dd-bc3ca2e59515
+
 trusted:
   issuers:
     - https://accounts.google.com

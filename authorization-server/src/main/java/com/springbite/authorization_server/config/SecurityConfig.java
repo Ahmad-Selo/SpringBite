@@ -1,6 +1,5 @@
 package com.springbite.authorization_server.config;
 
-import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
@@ -14,6 +13,7 @@ import com.springbite.authorization_server.models.SecurityUser;
 import com.springbite.authorization_server.repositories.KeyPairRepository;
 import com.springbite.authorization_server.repositories.MailSenderRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,8 +44,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -55,6 +54,9 @@ import static com.springbite.authorization_server.utils.KeyPairUtil.*;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Value("${jwk.kid}")
+    private String kid;
 
     private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
     private final CustomAuthenticationFailureHandler authenticationFailureHandler;
@@ -131,27 +133,21 @@ public class SecurityConfig {
 
     @Bean
     @Transactional
-    public List<RSAKey> rsaKeys() throws NoSuchAlgorithmException {
-        List<KeyPairEntity> keyPairEntities = keyPairRepository.findAll();
+    public RSAKey rsaKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
+        Optional<KeyPairEntity> keyPairEntityOptional = keyPairRepository.findByKid(kid);
 
-        List<RSAKey> rsaKeys = new ArrayList<>();
+        RSAKey rsaKey;
 
-        if (!keyPairEntities.isEmpty()) {
-            keyPairEntities.forEach(keyPairEntity -> {
-                try {
-                    RSAPublicKey publicKey = decodePublicKey(keyPairEntity.getPublicKey());
-                    RSAPrivateKey privateKey = decodePrivateKey(keyPairEntity.getPrivateKey());
+        if (keyPairEntityOptional.isPresent()) {
+            KeyPairEntity keyPairEntity = keyPairEntityOptional.get();
 
-                    RSAKey rsaKey = new RSAKey.Builder(publicKey)
-                            .privateKey(privateKey)
-                            .keyID(keyPairEntity.getKid())
-                            .build();
+            RSAPublicKey publicKey = decodePublicKey(keyPairEntity.getPublicKey());
+            RSAPrivateKey privateKey = decodePrivateKey(keyPairEntity.getPrivateKey());
 
-                    rsaKeys.add(rsaKey);
-                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            rsaKey = new RSAKey.Builder(publicKey)
+                    .privateKey(privateKey)
+                    .keyID(keyPairEntity.getKid())
+                    .build();
         } else {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
             keyPairGenerator.initialize(2048);
@@ -160,12 +156,10 @@ public class SecurityConfig {
             RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
             RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
 
-            RSAKey rsaKey = new RSAKey.Builder(publicKey)
+            rsaKey = new RSAKey.Builder(publicKey)
                     .privateKey(privateKey)
                     .keyID(UUID.randomUUID().toString())
                     .build();
-
-            rsaKeys.add(rsaKey);
 
             KeyPairEntity keyPairEntity = new KeyPairEntity(
                     rsaKey.getKeyID(),
@@ -175,16 +169,15 @@ public class SecurityConfig {
 
             keyPairRepository.save(keyPairEntity);
         }
-        return rsaKeys;
+
+        return rsaKey;
     }
 
     @Bean
-    public JWKSource<SecurityContext> jwkSource() throws NoSuchAlgorithmException {
-        List<RSAKey> rsaKeys = rsaKeys();
+    public JWKSource<SecurityContext> jwkSource() throws NoSuchAlgorithmException, InvalidKeySpecException {
+        RSAKey rsaKey = rsaKey();
 
-        List<JWK> jwks = new ArrayList<>(rsaKeys);
-
-        JWKSet jwkSet = new JWKSet(jwks);
+        JWKSet jwkSet = new JWKSet(rsaKey);
         return new ImmutableJWKSet<>(jwkSet);
     }
 
