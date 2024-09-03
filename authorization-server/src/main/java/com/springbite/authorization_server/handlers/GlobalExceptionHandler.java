@@ -1,4 +1,4 @@
-package com.springbite.authorization_server.exceptions;
+package com.springbite.authorization_server.handlers;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
