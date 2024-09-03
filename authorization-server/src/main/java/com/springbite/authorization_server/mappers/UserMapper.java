@@ -3,6 +3,7 @@ package com.springbite.authorization_server.mappers;
 import com.springbite.authorization_server.models.SecurityUser;
 import com.springbite.authorization_server.models.User;
 import com.springbite.authorization_server.models.dtos.UserDto;
+import com.springbite.authorization_server.models.dtos.UserPromoteResponse;
 import com.springbite.authorization_server.models.dtos.UserResponseDto;
 import org.springframework.stereotype.Component;
 
@@ -50,5 +51,14 @@ public class UserMapper {
 
     public SecurityUser userToSecurityUser(User user) {
         return new SecurityUser(user);
+    }
+
+    public UserPromoteResponse userToUserPromoteResponse(User user) {
+        return new UserPromoteResponse(user.getId(),
+                user.getUsername(),
+                user.getPhoneNumber(),
+                user.getPicture(),
+                user.getRole()
+        );
     }
 }

@@ -28,10 +28,10 @@ public class User {
     @Column(unique = true)
     private String phoneNumber;
 
+    private String picture;
+
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    private String picture;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<ConfirmationCode> confirmationCodes;

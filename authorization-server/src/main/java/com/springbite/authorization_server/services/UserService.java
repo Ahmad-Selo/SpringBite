@@ -6,12 +6,10 @@ import com.springbite.authorization_server.exceptions.CodeInvalidException;
 import com.springbite.authorization_server.exceptions.UserNotFoundException;
 import com.springbite.authorization_server.mappers.UserMapper;
 import com.springbite.authorization_server.models.User;
-import com.springbite.authorization_server.models.dtos.ChangePasswordRequest;
-import com.springbite.authorization_server.models.dtos.DeleteUserRequest;
-import com.springbite.authorization_server.models.dtos.UpdateUserRequest;
-import com.springbite.authorization_server.models.dtos.UserResponseDto;
+import com.springbite.authorization_server.models.dtos.*;
 import com.springbite.authorization_server.repositories.ConfirmationCodeRepository;
 import com.springbite.authorization_server.repositories.UserRepository;
+import com.springbite.authorization_server.security.Role;
 import jakarta.mail.MessagingException;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -23,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -128,6 +127,47 @@ public class UserService {
         UserResponseDto userResponseDto = userMapper.userToUserResponseDto(user);
 
         return ResponseEntity.status(HttpStatus.OK).body(userResponseDto);
+    }
+
+    public ResponseEntity<?> searchUser(String username, String phoneNumber) {
+        List<UserPromoteResponse> users;
+
+        if (username != null) {
+            users = userRepository.findByUsernameContaining(username)
+                    .orElse(new ArrayList<>())
+                    .stream()
+                    .map(userMapper::userToUserPromoteResponse)
+                    .collect(Collectors.toList());
+        } else {
+            users = userRepository.findByPhoneNumberContaining(phoneNumber)
+                    .orElse(new ArrayList<>())
+                    .stream()
+                    .map(userMapper::userToUserPromoteResponse)
+                    .collect(Collectors.toList());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(users);
+
+    }
+
+    public ResponseEntity<?> promoteUser(Long userId, PromoteRequest promoteRequest) {
+        User user;
+
+        try {
+            user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundException("User not found."));
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                    .singletonMap("error", e.getMessage()));
+        }
+
+        Role role = Role.valueOf(promoteRequest.getRole());
+
+        user.setRole(role);
+
+        userRepository.save(user);
+
+        return ResponseEntity.status(HttpStatus.OK).body(Collections
+                .singletonMap("message", "The user has been successfully promoted to the new role."));
     }
 
     public ResponseEntity<?> changePassword(Long userId, ChangePasswordRequest changePasswordRequest) {

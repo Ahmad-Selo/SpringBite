@@ -2,14 +2,16 @@ package com.springbite.authorization_server.controllers;
 
 import com.springbite.authorization_server.models.dtos.ChangePasswordRequest;
 import com.springbite.authorization_server.models.dtos.DeleteUserRequest;
+import com.springbite.authorization_server.models.dtos.PromoteRequest;
 import com.springbite.authorization_server.models.dtos.UpdateUserRequest;
+import com.springbite.authorization_server.security.HasRole;
 import com.springbite.authorization_server.security.RequireOwnership;
 import com.springbite.authorization_server.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,11 +46,29 @@ public class UserController {
     }
 
     @GetMapping("/{user-id}")
-    @PreAuthorize("#userId == authentication.principal.user.id or hasRole('ADMIN')")
+    @RequireOwnership
     public ResponseEntity<?> getUser(
             @PathVariable("user-id") Long userId
     ) {
         return userService.getUser(userId);
+    }
+
+    @GetMapping("/search")
+    @HasRole("ADMIN")
+    public ResponseEntity<?> searchUser(
+            @RequestParam(value = "username", required = false) String username,
+            @RequestParam(value = "phone-number", required = false) String phoneNumber
+    ) {
+        return userService.searchUser(username, phoneNumber);
+    }
+
+    @PutMapping("/{user-id}/promote")
+    @HasRole("ADMIN")
+    public ResponseEntity<?> promoteUser(
+            @PathVariable("user-id") Long userId,
+            @Valid @RequestBody PromoteRequest promoteRequest
+    ) {
+        return userService.promoteUser(userId, promoteRequest);
     }
 
     @PutMapping("/{user-id}/change-password")
@@ -99,6 +119,14 @@ public class UserController {
             HttpMessageNotReadableException exception
     ) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                .singletonMap("error", "Missing body."));
+                .singletonMap("error", "Missing body"));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<?> handleAccessDeniedException(
+            AccessDeniedException e
+    ) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
+                .singletonMap("error", e.getMessage()));
     }
 }
