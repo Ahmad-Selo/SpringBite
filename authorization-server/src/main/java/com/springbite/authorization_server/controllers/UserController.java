@@ -3,6 +3,7 @@ package com.springbite.authorization_server.controllers;
 import com.springbite.authorization_server.models.dtos.ChangePasswordRequest;
 import com.springbite.authorization_server.models.dtos.DeleteUserRequest;
 import com.springbite.authorization_server.models.dtos.UpdateUserRequest;
+import com.springbite.authorization_server.security.RequireOwnership;
 import com.springbite.authorization_server.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -25,16 +26,16 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PreAuthorize("#userId == authentication.principal.user.id")
     @PostMapping("/{user-id}/send-email-code")
+    @RequireOwnership
     public ResponseEntity<?> sendEmailCode(
             @PathVariable("user-id") Long userId
     ) {
         return userService.sendEmailCode(userId);
     }
 
-    @PreAuthorize("#userId == authentication.principal.user.id")
     @PostMapping("/{user-id}/confirm-email")
+    @RequireOwnership
     public ResponseEntity<?> confirmEmail(
             @PathVariable("user-id") Long userId,
             @RequestParam("code") String code
@@ -42,16 +43,16 @@ public class UserController {
         return userService.confirmEmail(userId, code);
     }
 
-    @PreAuthorize("#userId == authentication.principal.user.id or hasRole('ADMIN')")
     @GetMapping("/{user-id}")
+    @PreAuthorize("#userId == authentication.principal.user.id or hasRole('ADMIN')")
     public ResponseEntity<?> getUser(
             @PathVariable("user-id") Long userId
     ) {
         return userService.getUser(userId);
     }
 
-    @PreAuthorize("#userId == authentication.principal.user.id")
     @PutMapping("/{user-id}/change-password")
+    @RequireOwnership
     public ResponseEntity<?> changePassword(
             @PathVariable("user-id") Long userId,
             @Valid @RequestBody ChangePasswordRequest changePasswordRequest
@@ -59,8 +60,8 @@ public class UserController {
         return userService.changePassword(userId, changePasswordRequest);
     }
 
-    @PreAuthorize("#userId == authentication.principal.user.id")
     @PatchMapping("/{user-id}/update")
+    @RequireOwnership
     public ResponseEntity<?> updateUser(
             @PathVariable("user-id") Long userId,
             @Valid @RequestBody UpdateUserRequest updateUserRequest
@@ -68,8 +69,8 @@ public class UserController {
         return userService.updateUser(userId, updateUserRequest);
     }
 
-    @PreAuthorize("#userId == authentication.principal.user.id")
     @DeleteMapping("/{user-id}/delete")
+    @RequireOwnership
     public ResponseEntity<?> deleteUser(
             @PathVariable("user-id") Long userId,
             @Valid @RequestBody DeleteUserRequest deleteUserRequest
