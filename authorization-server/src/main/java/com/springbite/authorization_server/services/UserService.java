@@ -115,17 +115,19 @@ public class UserService {
     }
 
     public ResponseEntity<?> getUser(Long userId) {
+        User user;
+
         try {
-            User user = userRepository.findById(userId)
+            user = userRepository.findById(userId)
                     .orElseThrow(() -> new UserNotFoundException("User not found."));
-
-            UserResponseDto userResponseDto = userMapper.userToUserResponseDto(user);
-
-            return ResponseEntity.status(HttpStatus.OK).body(userResponseDto);
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
                     .singletonMap("error", e.getMessage()));
         }
+
+        UserResponseDto userResponseDto = userMapper.userToUserResponseDto(user);
+
+        return ResponseEntity.status(HttpStatus.OK).body(userResponseDto);
     }
 
     public ResponseEntity<?> changePassword(Long userId, ChangePasswordRequest changePasswordRequest) {
