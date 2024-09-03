@@ -6,6 +6,7 @@ import com.springbite.authorization_server.services.JwtService;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 
 import java.io.IOException;
 import java.security.interfaces.RSAPublicKey;
@@ -48,7 +49,7 @@ public class JwtAuthFilter implements Filter {
             provider = uri.substring(6);
         }
 
-        String authHeader = httpRequest.getHeader("Authorization");
+        String authHeader = httpRequest.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

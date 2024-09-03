@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -41,7 +42,7 @@ public class ClientAuthFilter implements Filter {
             return;
         }
 
-        String authHeader = httpRequest.getHeader("Authorization");
+        String authHeader = httpRequest.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Basic ")) {
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
