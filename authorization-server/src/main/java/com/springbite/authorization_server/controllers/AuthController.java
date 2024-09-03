@@ -5,13 +5,11 @@ import com.springbite.authorization_server.models.dtos.UserDto;
 import com.springbite.authorization_server.services.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.Collections;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class AuthController {
@@ -45,21 +43,5 @@ public class AuthController {
             HttpServletRequest request
     ) {
         return authService.auth(provider, request);
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleMethodArgumentNotValidException(
-            MethodArgumentNotValidException exception
-    ) {
-        var errors = new ArrayList<>();
-
-        exception.getBindingResult().getAllErrors()
-                .forEach(error -> {
-                    var errorMessage = error.getDefaultMessage();
-                    errors.add(errorMessage);
-                });
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                .singletonMap("error", errors));
     }
 }
