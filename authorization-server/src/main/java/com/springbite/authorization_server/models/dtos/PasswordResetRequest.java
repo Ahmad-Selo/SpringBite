@@ -8,7 +8,7 @@ import java.util.Objects;
 public class PasswordResetRequest {
 
     @NotBlank
-    @Size(min = 8)
+    @Size(min = 8, max = 64)
     private String password;
 
     public PasswordResetRequest() {
@@ -18,11 +18,11 @@ public class PasswordResetRequest {
         this.password = password;
     }
 
-    public @NotBlank @Size(min = 8) String getPassword() {
+    public @NotBlank @Size(min = 8, max = 64) String getPassword() {
         return password;
     }
 
-    public void setPassword(@NotBlank @Size(min = 8) String password) {
+    public void setPassword(@NotBlank @Size(min = 8, max = 64) String password) {
         this.password = password;
     }
 

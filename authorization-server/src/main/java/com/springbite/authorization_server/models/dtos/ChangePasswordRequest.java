@@ -8,11 +8,11 @@ import java.util.Objects;
 public class ChangePasswordRequest {
 
     @NotBlank
-    @Size(min = 8)
+    @Size(min = 8, max = 64)
     private String oldPassword;
 
     @NotBlank
-    @Size(min = 8)
+    @Size(min = 8, max = 64)
     private String newPassword;
 
     public ChangePasswordRequest() {
@@ -23,19 +23,19 @@ public class ChangePasswordRequest {
         this.newPassword = newPassword;
     }
 
-    public @NotBlank @Size(min = 8) String getOldPassword() {
+    public @NotBlank @Size(min = 8, max = 64) String getOldPassword() {
         return oldPassword;
     }
 
-    public void setOldPassword(@NotBlank @Size(min = 8) String oldPassword) {
+    public void setOldPassword(@NotBlank @Size(min = 8, max = 64) String oldPassword) {
         this.oldPassword = oldPassword;
     }
 
-    public @NotBlank @Size(min = 8) String getNewPassword() {
+    public @NotBlank @Size(min = 8, max = 64) String getNewPassword() {
         return newPassword;
     }
 
-    public void setNewPassword(@NotBlank @Size(min = 8) String newPassword) {
+    public void setNewPassword(@NotBlank @Size(min = 8, max = 64) String newPassword) {
         this.newPassword = newPassword;
     }
 

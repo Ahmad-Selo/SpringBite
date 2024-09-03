@@ -2,6 +2,7 @@ package com.springbite.authorization_server.models.dtos;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.util.Objects;
 
@@ -15,15 +16,19 @@ public class UserDto {
     private String username;
 
     @NotBlank
+    @Size(min = 8, max = 64)
     private String password;
 
     @NotBlank
+    @Size(min = 1, max = 50)
     private String firstname;
 
     @NotBlank
+    @Size(min = 1, max = 50)
     private String lastname;
 
     @NotBlank
+    @Size(min = 10, max = 15)
     private String phoneNumber;
 
     @NotBlank
@@ -55,35 +60,35 @@ public class UserDto {
         this.username = username;
     }
 
-    public @NotBlank String getPassword() {
+    public @NotBlank @Size(min = 8, max = 64) String getPassword() {
         return password;
     }
 
-    public void setPassword(@NotBlank String password) {
+    public void setPassword(@NotBlank @Size(min = 8, max = 64) String password) {
         this.password = password;
     }
 
-    public @NotBlank String getFirstname() {
+    public @NotBlank @Size(min = 1, max = 50) String getFirstname() {
         return firstname;
     }
 
-    public void setFirstname(@NotBlank String firstname) {
+    public void setFirstname(@NotBlank @Size(min = 1, max = 50) String firstname) {
         this.firstname = firstname;
     }
 
-    public @NotBlank String getLastname() {
+    public @NotBlank @Size(min = 1, max = 50) String getLastname() {
         return lastname;
     }
 
-    public void setLastname(@NotBlank String lastname) {
+    public void setLastname(@NotBlank @Size(min = 1, max = 50) String lastname) {
         this.lastname = lastname;
     }
 
-    public @NotBlank String getPhoneNumber() {
+    public @NotBlank @Size(min = 10, max = 15) String getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(@NotBlank String phoneNumber) {
+    public void setPhoneNumber(@NotBlank @Size(min = 10, max = 15) String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
