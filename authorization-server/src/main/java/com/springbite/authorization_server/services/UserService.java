@@ -132,14 +132,14 @@ public class UserService {
     public ResponseEntity<?> searchUser(String username, String phoneNumber) {
         List<UserPromoteResponse> users;
 
-        if (username != null) {
-            users = userRepository.findByUsernameContaining(username)
+        if (phoneNumber != null) {
+            users = userRepository.findByPhoneNumberContaining(phoneNumber)
                     .orElse(new ArrayList<>())
                     .stream()
                     .map(userMapper::userToUserPromoteResponse)
                     .collect(Collectors.toList());
         } else {
-            users = userRepository.findByPhoneNumberContaining(phoneNumber)
+            users = userRepository.findByUsernameContaining(username)
                     .orElse(new ArrayList<>())
                     .stream()
                     .map(userMapper::userToUserPromoteResponse)

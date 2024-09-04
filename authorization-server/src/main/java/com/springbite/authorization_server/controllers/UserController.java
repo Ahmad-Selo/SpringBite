@@ -49,7 +49,7 @@ public class UserController {
     @GetMapping("/search")
     @HasRole("ADMIN")
     public ResponseEntity<?> searchUser(
-            @RequestParam(value = "username", required = false) String username,
+            @RequestParam(value = "username", required = false, defaultValue = "") String username,
             @RequestParam(value = "phone-number", required = false) String phoneNumber
     ) {
         return userService.searchUser(username, phoneNumber);
