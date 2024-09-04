@@ -1,5 +1,7 @@
 package com.springbite.authorization_server.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.springbite.authorization_server.entities.ConfirmationCode;
 import com.springbite.authorization_server.entities.PasswordResetCode;
 import com.springbite.authorization_server.security.Role;
@@ -10,6 +12,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "users")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
 
     @Id
@@ -34,9 +37,11 @@ public class User {
     private Role role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    @JsonIgnore
     private List<ConfirmationCode> confirmationCodes;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    @JsonIgnore
     private List<PasswordResetCode> passwordResetCodes;
 
     private boolean emailVerified;
