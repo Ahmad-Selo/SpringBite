@@ -163,6 +163,7 @@ public class SecurityConfig {
         objectMapper.registerModules(securityModules);
         objectMapper.registerModule(new OAuth2AuthorizationServerJackson2Module());
 
+        objectMapper.addMixIn(Long.class, LongMixin.class);
         objectMapper.addMixIn(SecurityUser.class, SecurityUserMixin.class);
 
         authorizationRowMapper.setObjectMapper(objectMapper);
