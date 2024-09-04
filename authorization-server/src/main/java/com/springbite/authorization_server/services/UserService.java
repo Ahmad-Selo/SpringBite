@@ -160,7 +160,7 @@ public class UserService {
                     .singletonMap("error", e.getMessage()));
         }
 
-        Role role = Role.valueOf(promoteRequest.getRole());
+        Role role = Role.valueOf("ROLE_" + promoteRequest.getRole());
 
         user.setRole(role);
 
