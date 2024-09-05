@@ -1,17 +1,11 @@
 package com.springbite.authorization_server.services;
 
-import com.springbite.authorization_server.entities.ConfirmationCode;
-import com.springbite.authorization_server.exceptions.CodeExpiredException;
-import com.springbite.authorization_server.exceptions.CodeInvalidException;
 import com.springbite.authorization_server.exceptions.UserNotFoundException;
 import com.springbite.authorization_server.mappers.UserMapper;
 import com.springbite.authorization_server.models.User;
 import com.springbite.authorization_server.models.dtos.*;
-import com.springbite.authorization_server.repositories.ConfirmationCodeRepository;
 import com.springbite.authorization_server.repositories.UserRepository;
 import com.springbite.authorization_server.security.Role;
-import jakarta.mail.MessagingException;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,89 +22,18 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    private final ConfirmationCodeRepository confirmationCodeRepository;
-
     private final UserMapper userMapper;
 
     private final PasswordEncoder passwordEncoder;
 
-    private final EmailService emailService;
-
     public UserService(
             UserRepository userRepository,
-            ConfirmationCodeRepository confirmationCodeRepository,
             UserMapper userMapper,
-            PasswordEncoder passwordEncoder,
-            EmailService emailService
+            PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
-        this.confirmationCodeRepository = confirmationCodeRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
-        this.emailService = emailService;
-    }
-
-    public ResponseEntity<?> sendEmailCode(Long userId) {
-        User user;
-
-        try {
-            user = userRepository.findById(userId)
-                    .orElseThrow(() -> new UserNotFoundException("No user with this id exits."));
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
-
-        Sort sort = Sort.by(Sort.Direction.ASC, "createdAt");
-        List<ConfirmationCode> userConfirmationCodes = confirmationCodeRepository.findByUser(user, sort)
-                .orElse(new ArrayList<>());
-
-        if (userConfirmationCodes.size() >= 3) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Collections
-                    .singletonMap("message", "You have reached your daily limit for confirmation code requests. Please try again tomorrow or contact our support team for further assistance."));
-        }
-
-        if (!userConfirmationCodes.isEmpty() && userConfirmationCodes.getLast().getExpiresAt().getTime() > System.currentTimeMillis()) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Collections
-                    .singletonMap("message", "You've recently requested a code. Please wait 15 minutes from your last request before trying again. If you continue to experience issues, feel free to contact our support team for assistance."));
-        }
-
-        ConfirmationCode confirmationCode = new ConfirmationCode(user);
-
-        try {
-            emailService.sendConfirmationEmail(user.getUsername(), user.getFirstname(), confirmationCode.getCode());
-        } catch (MessagingException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", "Failed to send password confirmation email."));
-        }
-
-        confirmationCodeRepository.save(confirmationCode);
-
-        return ResponseEntity.status(HttpStatus.OK).body(Collections
-                .singletonMap("message", "A confirmation email has been sent."));
-    }
-
-    public ResponseEntity<?> confirmEmail(Long userId, String code) {
-        ConfirmationCode confirmationCode;
-
-        try {
-            confirmationCode = confirmationCodeRepository.findByCode(code)
-                    .orElseThrow(() -> new CodeInvalidException("Invalid code."));
-
-            confirmationCode.validateCode(userId);
-        } catch (CodeInvalidException | CodeExpiredException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
-
-        User user = confirmationCode.getUser();
-
-        user.setEmailVerified(true);
-
-        userRepository.save(user);
-
-        return ResponseEntity.status(HttpStatus.OK).body(Collections
-                .singletonMap("message", "Your email has been successfully confirmed. You can now access all features of your account."));
     }
 
     public ResponseEntity<?> getUser(Long userId) {

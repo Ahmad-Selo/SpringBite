@@ -21,23 +21,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/{user-id}/send-email-code")
-    @RequireOwnership
-    public ResponseEntity<?> sendEmailCode(
-            @PathVariable("user-id") Long userId
-    ) {
-        return userService.sendEmailCode(userId);
-    }
-
-    @PostMapping("/{user-id}/confirm-email")
-    @RequireOwnership
-    public ResponseEntity<?> confirmEmail(
-            @PathVariable("user-id") Long userId,
-            @RequestParam("code") String code
-    ) {
-        return userService.confirmEmail(userId, code);
-    }
-
     @GetMapping("/{user-id}")
     @RequireOwnership
     public ResponseEntity<?> getUser(
