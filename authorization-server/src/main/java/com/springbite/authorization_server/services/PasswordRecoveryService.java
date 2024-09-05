@@ -121,7 +121,7 @@ public class PasswordRecoveryService {
         return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
-    public ResponseEntity<?> restPassword(
+    public ResponseEntity<?> resetPassword(
             String token,
             PasswordResetRequest passwordResetRequest
     ) {
@@ -151,6 +151,8 @@ public class PasswordRecoveryService {
         userRepository.save(user);
 
         passwordResetToken.setExpired(true);
+
+        passwordResetTokenRepository.save(passwordResetToken);
 
         return ResponseEntity.status(HttpStatus.OK).body(Collections
                 .singletonMap("message", "Your password has been reset successfully. You can now login with your new password."));

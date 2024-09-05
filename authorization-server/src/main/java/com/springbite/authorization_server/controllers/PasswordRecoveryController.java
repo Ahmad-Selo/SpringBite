@@ -34,10 +34,10 @@ public class PasswordRecoveryController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> restPassword(
+    public ResponseEntity<?> resetPassword(
             @RequestParam("token") String token,
             @Valid @RequestBody PasswordResetRequest passwordResetRequest
     ) {
-        return passwordRecoveryService.restPassword(token, passwordResetRequest);
+        return passwordRecoveryService.resetPassword(token, passwordResetRequest);
     }
 }
