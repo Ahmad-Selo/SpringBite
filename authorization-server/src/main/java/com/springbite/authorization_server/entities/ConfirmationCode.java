@@ -1,7 +1,6 @@
 package com.springbite.authorization_server.entities;
 
 import com.springbite.authorization_server.exceptions.CodeExpiredException;
-import com.springbite.authorization_server.exceptions.CodeInvalidException;
 import com.springbite.authorization_server.models.User;
 import com.springbite.authorization_server.security.CodeGenerator;
 import jakarta.persistence.*;
@@ -88,14 +87,7 @@ public class ConfirmationCode {
         this.user = user;
     }
 
-    private void validateUser(Long userId) throws CodeInvalidException {
-        if (!Objects.equals(user.getId(), userId)) {
-            throw new CodeInvalidException("Invalid code.");
-        }
-    }
-
-    public void validateCode(Long userId) throws CodeInvalidException, CodeExpiredException {
-        validateUser(userId);
+    public void validateCode() throws CodeExpiredException {
         if (System.currentTimeMillis() >= expiresAt.getTime() || expired) {
             throw new CodeExpiredException("The code you provided has expired. Please request a new code.");
         }

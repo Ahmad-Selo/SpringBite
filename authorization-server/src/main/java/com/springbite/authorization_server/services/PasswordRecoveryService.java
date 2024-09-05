@@ -137,7 +137,7 @@ public class PasswordRecoveryService {
                     .singletonMap("error", e.getMessage()));
         }
 
-        User user = passwordResetToken.getPasswordRestCode().getUser();
+        User user = passwordResetToken.getPasswordResetCode().getUser();
 
         if (passwordEncoder.matches(passwordResetRequest.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
@@ -149,6 +149,8 @@ public class PasswordRecoveryService {
         user.setPassword(encodedPassword);
 
         userRepository.save(user);
+
+        passwordResetToken.setExpired(true);
 
         return ResponseEntity.status(HttpStatus.OK).body(Collections
                 .singletonMap("message", "Your password has been reset successfully. You can now login with your new password."));

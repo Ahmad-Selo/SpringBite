@@ -23,6 +23,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authorization.method.PrePostTemplateDefaults;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -68,6 +69,7 @@ public class SecurityConfig {
 
     private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
     private final CustomAuthenticationFailureHandler authenticationFailureHandler;
+    private final AuthenticationProvider authenticationProvider;
     private final MailSenderRepository mailSenderRepository;
     private final KeyPairRepository keyPairRepository;
     @Value("${jwk.kid}")
@@ -76,11 +78,13 @@ public class SecurityConfig {
     public SecurityConfig(
             CustomAuthenticationSuccessHandler authenticationSuccessHandler,
             CustomAuthenticationFailureHandler authenticationFailureHandler,
+            AuthenticationProvider authenticationProvider,
             MailSenderRepository mailSenderRepository,
             KeyPairRepository keyPairRepository
     ) {
         this.authenticationSuccessHandler = authenticationSuccessHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
+        this.authenticationProvider = authenticationProvider;
         this.mailSenderRepository = mailSenderRepository;
         this.keyPairRepository = keyPairRepository;
     }
@@ -116,6 +120,8 @@ public class SecurityConfig {
                 c -> c.successHandler(authenticationSuccessHandler)
                         .failureHandler(authenticationFailureHandler)
         );
+
+        http.authenticationProvider(authenticationProvider);
 
         http.authorizeHttpRequests(
                 c -> c.requestMatchers("/login", "/csrf", "/signup/**", "/auth/**",

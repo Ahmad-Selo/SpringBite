@@ -22,10 +22,9 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(
-            @Valid @RequestBody UserDto dto,
-            HttpServletRequest request
+            @Valid @RequestBody UserDto dto
     ) {
-        return authService.signup(dto, request);
+        return authService.signup(dto);
     }
 
     @PostMapping("/signup/{provider}")

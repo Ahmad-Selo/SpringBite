@@ -22,6 +22,8 @@ public class PasswordResetToken {
 
     private Date expiresAt;
 
+    private boolean expired;
+
     @OneToOne
     private PasswordResetCode passwordResetCode;
 
@@ -32,6 +34,7 @@ public class PasswordResetToken {
         this.token = UUID.randomUUID().toString();
         this.createdAt = new Date();
         this.expiresAt = new Date(createdAt.getTime() + 900000);
+        this.expired = false;
         this.passwordResetCode = passwordResetCode;
     }
 
@@ -67,16 +70,24 @@ public class PasswordResetToken {
         this.expiresAt = expiresAt;
     }
 
-    public PasswordResetCode getPasswordRestCode() {
+    public boolean isExpired() {
+        return expired;
+    }
+
+    public void setExpired(boolean expired) {
+        this.expired = expired;
+    }
+
+    public PasswordResetCode getPasswordResetCode() {
         return passwordResetCode;
     }
 
-    public void setPasswordRestCode(PasswordResetCode passwordResetCode) {
+    public void setPasswordResetCode(PasswordResetCode passwordResetCode) {
         this.passwordResetCode = passwordResetCode;
     }
 
     public void validateToken() throws TokenExpiredException {
-        if (System.currentTimeMillis() >= this.expiresAt.getTime()) {
+        if (System.currentTimeMillis() >= this.expiresAt.getTime() || expired) {
             throw new TokenExpiredException("The token you provided has expired. Please request a new code.");
         }
     }
@@ -86,7 +97,8 @@ public class PasswordResetToken {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PasswordResetToken that = (PasswordResetToken) o;
-        return Objects.equals(id, that.id) &&
+        return expired == that.expired &&
+                Objects.equals(id, that.id) &&
                 Objects.equals(token, that.token) &&
                 Objects.equals(createdAt, that.createdAt) &&
                 Objects.equals(expiresAt, that.expiresAt) &&
@@ -95,17 +107,18 @@ public class PasswordResetToken {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, token, createdAt, expiresAt, passwordResetCode);
+        return Objects.hash(id, token, createdAt, expiresAt, expired, passwordResetCode);
     }
 
     @Override
     public String toString() {
-        return "PasswordRestToken{" +
+        return "PasswordResetToken{" +
                 "id=" + id +
                 ", token='" + token + '\'' +
                 ", createdAt=" + createdAt +
                 ", expiresAt=" + expiresAt +
-                ", passwordRestCode=" + passwordResetCode +
+                ", expired=" + expired +
+                ", passwordResetCode=" + passwordResetCode +
                 '}';
     }
 }

@@ -1,40 +1,28 @@
 package com.springbite.authorization_server.services;
 
-import com.springbite.authorization_server.entities.ConfirmationCode;
 import com.springbite.authorization_server.mappers.UserMapper;
 import com.springbite.authorization_server.models.SecurityUser;
 import com.springbite.authorization_server.models.User;
 import com.springbite.authorization_server.models.dtos.SignupWithProviderRequest;
 import com.springbite.authorization_server.models.dtos.UserDto;
 import com.springbite.authorization_server.models.dtos.UserResponseDto;
-import com.springbite.authorization_server.repositories.ConfirmationCodeRepository;
 import com.springbite.authorization_server.repositories.UserRepository;
 import com.springbite.authorization_server.security.PasswordGenerator;
-import jakarta.mail.MessagingException;
+import com.springbite.authorization_server.security.SecurityContextService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.interfaces.RSAPublicKey;
 import java.util.Collections;
 
-import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
-
 @Service
 public class AuthService {
 
-
     private final UserRepository userRepository;
-
-    private final ConfirmationCodeRepository confirmationCodeRepository;
 
     private final UserMapper userMapper;
 
@@ -46,26 +34,24 @@ public class AuthService {
 
     private final JwtService jwtService;
 
-    private final EmailService emailService;
+    private final SecurityContextService securityContextService;
 
     public AuthService(
             UserRepository userRepository,
-            ConfirmationCodeRepository confirmationCodeRepository,
             UserMapper userMapper,
             PasswordEncoder passwordEncoder,
             PasswordGenerator passwordGenerator,
             JwkService jwkService,
             JwtService jwtService,
-            EmailService emailService
+            SecurityContextService securityContextService
     ) {
         this.userRepository = userRepository;
-        this.confirmationCodeRepository = confirmationCodeRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.passwordGenerator = passwordGenerator;
         this.jwkService = jwkService;
         this.jwtService = jwtService;
-        this.emailService = emailService;
+        this.securityContextService = securityContextService;
     }
 
     public boolean isUsernameAlreadyExist(String username) {
@@ -82,24 +68,8 @@ public class AuthService {
         return authHeader.substring(7);
     }
 
-    private void authenticateUser(SecurityUser securityUser, HttpServletRequest request) {
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                securityUser,
-                null,
-                securityUser.getAuthorities()
-        );
-
-        authentication.setDetails(new WebAuthenticationDetails(request));
-
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        HttpSession session = request.getSession(true);
-        session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, securityContext);
-    }
-
     public ResponseEntity<?> signup(
-            UserDto dto,
-            HttpServletRequest request
+            UserDto dto
     ) {
         if (isUsernameAlreadyExist(dto.getUsername())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Collections
@@ -117,29 +87,10 @@ public class AuthService {
 
         User user = userMapper.userDtoToUser(dto, false);
 
-        User savedUser = userRepository.save(user);
-
-        ConfirmationCode confirmationCode = new ConfirmationCode(savedUser);
-
-        confirmationCodeRepository.save(confirmationCode);
-
-        try {
-            emailService.sendConfirmationEmail(
-                    savedUser.getUsername(),
-                    savedUser.getFirstname(),
-                    confirmationCode.getCode()
-            );
-        } catch (MessagingException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", "Failed to send confirmation email."));
-        }
-
-        SecurityUser securityUser = userMapper.userToSecurityUser(savedUser);
-
-        authenticateUser(securityUser, request);
+        userRepository.save(user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(Collections
-                .singletonMap("message", "Signup successful. A confirmation email has been sent.")
+                .singletonMap("message", "Signup successful.")
         );
     }
 
@@ -184,12 +135,12 @@ public class AuthService {
 
             if (isUsernameAlreadyExist(username)) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(Collections
-                        .singletonMap("error", "username already exist."));
+                        .singletonMap("error", "username already exists."));
             }
 
             if (isPhoneNumberAlreadyExist(signupWithProviderRequest.getPhoneNumber())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(Collections
-                        .singletonMap("error", "phone number already exist."));
+                        .singletonMap("error", "phone number already exists."));
             }
 
             String password = passwordGenerator.generateRandomPassword(16);
@@ -215,7 +166,7 @@ public class AuthService {
 
         SecurityUser securityUser = userMapper.userToSecurityUser(savedUser);
 
-        authenticateUser(securityUser, request);
+        securityContextService.authenticateUser(securityUser, request);
 
         UserResponseDto userResponseDto = userMapper.userToUserResponseDto(savedUser);
 
@@ -239,7 +190,7 @@ public class AuthService {
                         "email");
 
                 user = userRepository.findByUsername(username)
-                        .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+                        .orElseThrow(() -> new UsernameNotFoundException("Username not found."));
 
             } catch (UsernameNotFoundException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
@@ -255,7 +206,7 @@ public class AuthService {
 
         SecurityUser securityUser = userMapper.userToSecurityUser(user);
 
-        authenticateUser(securityUser, request);
+        securityContextService.authenticateUser(securityUser, request);
 
         UserResponseDto userResponseDto = userMapper.userToUserResponseDto(user);
 
