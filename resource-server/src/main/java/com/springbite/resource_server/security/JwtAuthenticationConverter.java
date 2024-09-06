@@ -1,4 +1,4 @@
-package com.springbite.resource_server.config.security;
+package com.springbite.resource_server.security;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,7 +20,11 @@ public class JwtAuthenticationConverter implements Converter<Jwt, CustomAuthenti
     public CustomAuthentication convert(Jwt source) {
         List<GrantedAuthority> authorities = extractAuthorities(source);
 
-        return new CustomAuthentication(source, authorities);
+        Long userId = (Long) source.getClaims().get("uid");
+
+        boolean emailVerified = (boolean) source.getClaims().get("email_verified");
+
+        return new CustomAuthentication(source, authorities, userId, emailVerified);
     }
 
     private List<GrantedAuthority> extractAuthorities(Jwt source) {
