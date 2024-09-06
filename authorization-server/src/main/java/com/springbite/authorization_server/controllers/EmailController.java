@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/emails")
+@RequestMapping("/email")
 public class EmailController {
 
     private final EmailService emailService;
