@@ -101,7 +101,7 @@ public class FoodController {
         return foodService.updateFood(foodId, updateFoodRequest);
     }
 
-    @DeleteMapping("/delete/{food-id}")
+    @DeleteMapping("/{food-id}/delete")
     @HasAnyRole(roles = {"'ADMIN'", "'MANAGER'"})
     public ResponseEntity<?> deleteFood(
             @PathVariable("food-id") Long foodId
@@ -109,7 +109,7 @@ public class FoodController {
         return foodService.deleteFood(foodId);
     }
 
-    @PostMapping("/rate/{food-id}")
+    @PostMapping("/{food-id}/rate")
     @HasRole("USER")
     public ResponseEntity<?> rateFood(
             @PathVariable("food-id") Long foodId,
