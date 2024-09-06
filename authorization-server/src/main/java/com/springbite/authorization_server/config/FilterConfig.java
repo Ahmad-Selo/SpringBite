@@ -73,7 +73,7 @@ public class FilterConfig {
     public FilterRegistrationBean<PasswordResetTokenFilter> passwordRestTokenFilterRegistrationBean(PasswordResetTokenFilter filter) {
         FilterRegistrationBean<PasswordResetTokenFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(filter);
-        registrationBean.addUrlPatterns("/rest-password");
+        registrationBean.addUrlPatterns("/reset-password");
 
         return registrationBean;
     }
