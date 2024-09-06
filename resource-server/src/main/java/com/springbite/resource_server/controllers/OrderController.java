@@ -1,20 +1,18 @@
 package com.springbite.resource_server.controllers;
 
+import com.springbite.resource_server.exceptions.ResourceNotFoundException;
 import com.springbite.resource_server.models.dtos.OrderDto;
+import com.springbite.resource_server.security.CustomAuthentication;
+import com.springbite.resource_server.security.HasAnyRole;
+import com.springbite.resource_server.security.RequireOrderOwnershipOrHasAnyRole;
+import com.springbite.resource_server.security.RequireOwnership;
 import com.springbite.resource_server.services.OrderService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.ArrayList;
-import java.util.Collections;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/orders")
 public class OrderController {
 
     private final OrderService orderService;
@@ -23,26 +21,33 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PostMapping("/order")
-    public ResponseEntity<?> order(
-            @Valid @RequestBody OrderDto orderDto
-    ) {
-        return orderService.order(orderDto);
+    @GetMapping("/all")
+    @HasAnyRole(roles = {"'ADMIN'", "'MANAGER'"})
+    public ResponseEntity<?> getAllOrders() {
+        return orderService.getAllOrders();
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleMethodArgumentNotValidException(
-            MethodArgumentNotValidException exception
+    @GetMapping("/users/{user-id}")
+    @RequireOwnership
+    public ResponseEntity<?> getOrders(
+            @PathVariable("user-id") Long userId
     ) {
-        var errors = new ArrayList<>();
+        return orderService.getOrders(userId);
+    }
 
-        exception.getBindingResult().getAllErrors()
-                .forEach(error -> {
-                    var errorMessage = error.getDefaultMessage();
-                    errors.add(errorMessage);
-                });
+    @GetMapping("/{order-id}")
+    @RequireOrderOwnershipOrHasAnyRole(roles = {"'ADMIN'", "'MANAGER'"})
+    public ResponseEntity<?> getOrder(
+            @PathVariable("order-id") Long orderId
+    ) throws ResourceNotFoundException {
+        return orderService.getOrder(orderId);
+    }
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                .singletonMap("error", errors));
+    @PostMapping("/create")
+    public ResponseEntity<?> createOrder(
+            @Valid @RequestBody OrderDto orderDto,
+            CustomAuthentication customAuthentication
+    ) {
+        return orderService.createOrder(orderDto, customAuthentication.getUserId());
     }
 }
