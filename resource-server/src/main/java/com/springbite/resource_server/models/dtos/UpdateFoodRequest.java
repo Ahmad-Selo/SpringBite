@@ -8,13 +8,15 @@ public class UpdateFoodRequest {
 
     private String name;
 
+    private String picture;
+
     private String description;
 
     private Double price;
 
-    private Boolean available;
+    private boolean available;
 
-    private Boolean recommend;
+    private boolean recommended;
 
     private Cuisine cuisine;
 
@@ -23,17 +25,19 @@ public class UpdateFoodRequest {
 
     public UpdateFoodRequest(
             String name,
+            String picture,
             String description,
             Double price,
-            Boolean available,
-            Boolean recommend,
+            boolean available,
+            boolean recommended,
             Cuisine cuisine
     ) {
         this.name = name;
+        this.picture = picture;
         this.description = description;
         this.price = price;
         this.available = available;
-        this.recommend = recommend;
+        this.recommended = recommended;
         this.cuisine = cuisine;
     }
 
@@ -43,6 +47,14 @@ public class UpdateFoodRequest {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
     }
 
     public String getDescription() {
@@ -61,20 +73,20 @@ public class UpdateFoodRequest {
         this.price = price;
     }
 
-    public Boolean getAvailable() {
+    public boolean isAvailable() {
         return available;
     }
 
-    public void setAvailable(Boolean available) {
+    public void setAvailable(boolean available) {
         this.available = available;
     }
 
-    public Boolean getRecommend() {
-        return recommend;
+    public boolean isRecommended() {
+        return recommended;
     }
 
-    public void setRecommend(Boolean recommend) {
-        this.recommend = recommend;
+    public void setRecommended(boolean recommended) {
+        this.recommended = recommended;
     }
 
     public Cuisine getCuisine() {
@@ -90,16 +102,30 @@ public class UpdateFoodRequest {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UpdateFoodRequest that = (UpdateFoodRequest) o;
-        return Objects.equals(name, that.name) &&
+        return available == that.available &&
+                recommended == that.recommended &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(picture, that.picture) &&
                 Objects.equals(description, that.description) &&
                 Objects.equals(price, that.price) &&
-                Objects.equals(available, that.available) &&
-                Objects.equals(recommend, that.recommend) &&
                 cuisine == that.cuisine;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, price, available, recommend, cuisine);
+        return Objects.hash(name, picture, description, price, available, recommended, cuisine);
+    }
+
+    @Override
+    public String toString() {
+        return "UpdateFoodRequest{" +
+                "name='" + name + '\'' +
+                ", picture='" + picture + '\'' +
+                ", description='" + description + '\'' +
+                ", price=" + price +
+                ", available=" + available +
+                ", recommended=" + recommended +
+                ", cuisine=" + cuisine +
+                '}';
     }
 }

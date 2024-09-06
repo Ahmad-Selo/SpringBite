@@ -1,10 +1,11 @@
 package com.springbite.resource_server.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "orders")
@@ -16,22 +17,44 @@ public class Order {
 
     private Long userId;
 
+    @Column(updatable = false)
     private Date createdAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<OrderItem> orderItems;
+    @JsonManagedReference
+    private List<OrderItem> orderItems;
 
     private String address;
 
     private Double price;
 
     public Order() {
+    }
+
+    public Order(Long userId, String address) {
+        this.userId = userId;
+        this.address = address;
         this.createdAt = new Date();
     }
 
-    public Order(Long userId, Set<OrderItem> orderItems, String address, Double price) {
+    public Order(List<OrderItem> orderItems, Double price, String address) {
+        this.createdAt = new Date();
+        this.orderItems = orderItems;
+        this.price = price;
+        this.address = address;
+    }
+
+    public Order(Long userId, List<OrderItem> orderItems, String address, Double price) {
         this.userId = userId;
         this.createdAt = new Date();
+        this.orderItems = orderItems;
+        this.address = address;
+        this.price = price;
+    }
+
+    public Order(Long userId, Date createdAt, List<OrderItem> orderItems, String address, Double price) {
+        this.userId = userId;
+        this.createdAt = createdAt;
         this.orderItems = orderItems;
         this.address = address;
         this.price = price;
@@ -61,11 +84,11 @@ public class Order {
         this.createdAt = createdAt;
     }
 
-    public Set<OrderItem> getOrderItems() {
+    public List<OrderItem> getOrderItems() {
         return orderItems;
     }
 
-    public void setOrderItems(Set<OrderItem> orderItems) {
+    public void setOrderItems(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
     }
 

@@ -8,13 +8,17 @@ public class FoodResponseDto {
 
     private String name;
 
+    private String picture;
+
     private String description;
 
     private Double averageRating;
 
+    private Long popularity;
+
     private Double price;
 
-    private Boolean recommend;
+    private boolean recommended;
 
     public FoodResponseDto() {
     }
@@ -22,17 +26,21 @@ public class FoodResponseDto {
     public FoodResponseDto(
             Long id,
             String name,
+            String picture,
             String description,
             Double averageRating,
+            Long popularity,
             Double price,
-            Boolean recommend
+            boolean recommended
     ) {
         this.id = id;
         this.name = name;
+        this.picture = picture;
         this.description = description;
         this.averageRating = averageRating;
+        this.popularity = popularity;
         this.price = price;
-        this.recommend = recommend;
+        this.recommended = recommended;
     }
 
     public Long getId() {
@@ -51,6 +59,14 @@ public class FoodResponseDto {
         this.name = name;
     }
 
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -67,6 +83,14 @@ public class FoodResponseDto {
         this.averageRating = averageRating;
     }
 
+    public Long getPopularity() {
+        return popularity;
+    }
+
+    public void setPopularity(Long popularity) {
+        this.popularity = popularity;
+    }
+
     public Double getPrice() {
         return price;
     }
@@ -75,12 +99,12 @@ public class FoodResponseDto {
         this.price = price;
     }
 
-    public Boolean getRecommend() {
-        return recommend;
+    public boolean isRecommended() {
+        return recommended;
     }
 
-    public void setRecommend(Boolean recommend) {
-        this.recommend = recommend;
+    public void setRecommended(boolean recommended) {
+        this.recommended = recommended;
     }
 
     @Override
@@ -88,17 +112,19 @@ public class FoodResponseDto {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FoodResponseDto that = (FoodResponseDto) o;
-        return Objects.equals(id, that.id) &&
+        return recommended == that.recommended &&
+                Objects.equals(id, that.id) &&
                 Objects.equals(name, that.name) &&
+                Objects.equals(picture, that.picture) &&
                 Objects.equals(description, that.description) &&
                 Objects.equals(averageRating, that.averageRating) &&
-                Objects.equals(price, that.price) &&
-                Objects.equals(recommend, that.recommend);
+                Objects.equals(popularity, that.popularity) &&
+                Objects.equals(price, that.price);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, averageRating, price, recommend);
+        return Objects.hash(id, name, picture, description, averageRating, popularity, price, recommended);
     }
 
     @Override
@@ -106,10 +132,12 @@ public class FoodResponseDto {
         return "FoodResponseDto{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", picture='" + picture + '\'' +
                 ", description='" + description + '\'' +
                 ", averageRating=" + averageRating +
+                ", popularity=" + popularity +
                 ", price=" + price +
-                ", recommend=" + recommend +
+                ", recommended=" + recommended +
                 '}';
     }
 }

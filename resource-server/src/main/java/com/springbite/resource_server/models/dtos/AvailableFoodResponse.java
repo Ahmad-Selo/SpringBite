@@ -1,6 +1,5 @@
 package com.springbite.resource_server.models.dtos;
 
-import java.util.Date;
 import java.util.Objects;
 
 public class AvailableFoodResponse {
@@ -9,13 +8,13 @@ public class AvailableFoodResponse {
 
     private String name;
 
+    private String picture;
+
     private Double price;
 
     private Double averageRating;
 
-    private Date createdAt;
-
-    private Boolean recommend;
+    private boolean recommended;
 
     public AvailableFoodResponse() {
     }
@@ -23,17 +22,17 @@ public class AvailableFoodResponse {
     public AvailableFoodResponse(
             Long id,
             String name,
+            String picture,
             Double price,
             Double averageRating,
-            Date createdAt,
-            Boolean recommend
+            boolean recommended
     ) {
         this.id = id;
         this.name = name;
+        this.picture = picture;
         this.price = price;
         this.averageRating = averageRating;
-        this.createdAt = createdAt;
-        this.recommend = recommend;
+        this.recommended = recommended;
     }
 
     public Long getId() {
@@ -52,6 +51,14 @@ public class AvailableFoodResponse {
         this.name = name;
     }
 
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
+
     public Double getPrice() {
         return price;
     }
@@ -68,20 +75,12 @@ public class AvailableFoodResponse {
         this.averageRating = averageRating;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
+    public boolean isRecommended() {
+        return recommended;
     }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Boolean getRecommend() {
-        return recommend;
-    }
-
-    public void setRecommend(Boolean recommend) {
-        this.recommend = recommend;
+    public void setRecommended(boolean recommended) {
+        this.recommended = recommended;
     }
 
     @Override
@@ -89,17 +88,17 @@ public class AvailableFoodResponse {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AvailableFoodResponse that = (AvailableFoodResponse) o;
-        return Objects.equals(id, that.id) &&
+        return recommended == that.recommended &&
+                Objects.equals(id, that.id) &&
                 Objects.equals(name, that.name) &&
+                Objects.equals(picture, that.picture) &&
                 Objects.equals(price, that.price) &&
-                Objects.equals(averageRating, that.averageRating) &&
-                Objects.equals(createdAt, that.createdAt) &&
-                Objects.equals(recommend, that.recommend);
+                Objects.equals(averageRating, that.averageRating);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, price, averageRating, createdAt, recommend);
+        return Objects.hash(id, name, picture, price, averageRating, recommended);
     }
 
     @Override
@@ -107,10 +106,10 @@ public class AvailableFoodResponse {
         return "AvailableFoodResponse{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", picture='" + picture + '\'' +
                 ", price=" + price +
                 ", averageRating=" + averageRating +
-                ", createdAt=" + createdAt +
-                ", recommend=" + recommend +
+                ", recommended=" + recommended +
                 '}';
     }
 }

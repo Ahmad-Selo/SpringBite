@@ -1,5 +1,6 @@
 package com.springbite.resource_server.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.util.Objects;
@@ -13,9 +14,11 @@ public class OrderItem {
     private Long id;
 
     @ManyToOne
+    @JsonBackReference
     private Order order;
 
     @ManyToOne
+    @JsonBackReference
     private Food food;
 
     private Double itemPrice;
@@ -23,6 +26,12 @@ public class OrderItem {
     private Integer quantity;
 
     public OrderItem() {
+    }
+
+    public OrderItem(Food food, Double itemPrice, Integer quantity) {
+        this.food = food;
+        this.itemPrice = itemPrice;
+        this.quantity = quantity;
     }
 
     public OrderItem(Order order, Food food, Double itemPrice, Integer quantity) {

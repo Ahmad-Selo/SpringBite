@@ -12,10 +12,11 @@ public class FoodMapper {
     public Food foodDtoToFood(FoodDto dto) {
         return new Food(
                 dto.getName(),
+                dto.getPicture(),
                 dto.getDescription(),
                 dto.getPrice(),
-                dto.getAvailable(),
-                dto.getRecommend(),
+                dto.isAvailable(),
+                dto.isRecommended(),
                 dto.getCuisine()
         );
     }
@@ -24,10 +25,10 @@ public class FoodMapper {
         return new AvailableFoodResponse(
                 food.getId(),
                 food.getName(),
+                food.getPicture(),
                 food.getPrice(),
                 food.getAverageRating(),
-                food.getCreatedAt(),
-                food.getRecommend()
+                food.isRecommended()
         );
     }
 
@@ -35,10 +36,12 @@ public class FoodMapper {
         return new FoodResponseDto(
                 food.getId(),
                 food.getName(),
+                food.getPicture(),
                 food.getDescription(),
                 food.getAverageRating(),
+                food.getPopularity(),
                 food.getPrice(),
-                food.getRecommend()
+                food.isRecommended()
         );
     }
 }

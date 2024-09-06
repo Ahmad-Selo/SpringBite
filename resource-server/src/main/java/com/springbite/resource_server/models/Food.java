@@ -1,11 +1,11 @@
 package com.springbite.resource_server.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "foods")
@@ -18,6 +18,8 @@ public class Food {
     @Column(unique = true)
     private String name;
 
+    private String picture;
+
     private String description;
 
     private Double averageRating;
@@ -25,83 +27,96 @@ public class Food {
     @OneToMany(mappedBy = "food", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Rating> ratings;
 
+    private Long popularity;
+
     private Double price;
 
     @Column(updatable = false)
     private Date createdAt;
 
-    private Boolean available;
+    private boolean available;
 
-    private Boolean recommend;
+    private boolean recommended;
 
     @Enumerated(EnumType.STRING)
     private Cuisine cuisine;
 
     @OneToMany(mappedBy = "food",
             cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
-    private Set<OrderItem> orderItems;
+    @JsonManagedReference
+    private List<OrderItem> orderItems;
 
     public Food() {
     }
 
     public Food(
             String name,
+            String picture,
             String description,
             Double price,
-            Boolean available,
-            Boolean recommend,
+            boolean available,
+            boolean recommended,
             Cuisine cuisine
     ) {
         this.name = name;
+        this.picture = picture;
         this.description = description;
         this.price = price;
         this.createdAt = new Date();
         this.available = available;
-        this.recommend = recommend;
+        this.recommended = recommended;
         this.cuisine = cuisine;
     }
 
     public Food(
             String name,
+            String picture,
             String description,
             Double averageRating,
             List<Rating> ratings,
+            Long popularity,
             Double price,
-            Boolean available,
-            Boolean recommend,
+            boolean available,
+            boolean recommended,
             Cuisine cuisine
     ) {
         this.name = name;
+        this.picture = picture;
         this.description = description;
         this.averageRating = averageRating;
         this.ratings = ratings;
+        this.popularity = popularity;
         this.price = price;
         this.createdAt = new Date();
         this.available = available;
-        this.recommend = recommend;
+        this.recommended = recommended;
         this.cuisine = cuisine;
     }
 
     public Food(
             String name,
+            String picture,
             String description,
             Double averageRating,
             List<Rating> ratings,
+            Long popularity,
             Double price,
             Date createdAt,
-            Boolean available,
-            Boolean recommend,
+            boolean available,
+            boolean recommended,
             Cuisine cuisine,
-            Set<OrderItem> orderItems
+            List<OrderItem> orderItems
     ) {
         this.name = name;
+        this.picture = picture;
         this.description = description;
         this.averageRating = averageRating;
         this.ratings = ratings;
+        this.popularity = popularity;
         this.price = price;
         this.createdAt = createdAt;
         this.available = available;
-        this.recommend = recommend;
+        this.recommended = recommended;
         this.cuisine = cuisine;
         this.orderItems = orderItems;
     }
@@ -120,6 +135,14 @@ public class Food {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
     }
 
     public String getDescription() {
@@ -146,6 +169,14 @@ public class Food {
         this.ratings = ratings;
     }
 
+    public Long getPopularity() {
+        return popularity;
+    }
+
+    public void setPopularity(Long popularity) {
+        this.popularity = popularity;
+    }
+
     public Double getPrice() {
         return price;
     }
@@ -162,20 +193,20 @@ public class Food {
         this.createdAt = createdAt;
     }
 
-    public Boolean getAvailable() {
+    public boolean isAvailable() {
         return available;
     }
 
-    public void setAvailable(Boolean available) {
+    public void setAvailable(boolean available) {
         this.available = available;
     }
 
-    public Boolean getRecommend() {
-        return recommend;
+    public boolean isRecommended() {
+        return recommended;
     }
 
-    public void setRecommend(Boolean recommend) {
-        this.recommend = recommend;
+    public void setRecommended(boolean recommended) {
+        this.recommended = recommended;
     }
 
     public Cuisine getCuisine() {
@@ -186,11 +217,11 @@ public class Food {
         this.cuisine = cuisine;
     }
 
-    public Set<OrderItem> getOrderItems() {
+    public List<OrderItem> getOrderItems() {
         return orderItems;
     }
 
-    public void setOrderItems(Set<OrderItem> orderItems) {
+    public void setOrderItems(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
     }
 
@@ -199,15 +230,17 @@ public class Food {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Food food = (Food) o;
-        return Objects.equals(id, food.id) &&
+        return available == food.available &&
+                recommended == food.recommended &&
+                Objects.equals(id, food.id) &&
                 Objects.equals(name, food.name) &&
+                Objects.equals(picture, food.picture) &&
                 Objects.equals(description, food.description) &&
                 Objects.equals(averageRating, food.averageRating) &&
                 Objects.equals(ratings, food.ratings) &&
+                Objects.equals(popularity, food.popularity) &&
                 Objects.equals(price, food.price) &&
                 Objects.equals(createdAt, food.createdAt) &&
-                Objects.equals(available, food.available) &&
-                Objects.equals(recommend, food.recommend) &&
                 cuisine == food.cuisine &&
                 Objects.equals(orderItems, food.orderItems);
     }
@@ -217,15 +250,18 @@ public class Food {
         return Objects.hash(
                 id,
                 name,
+                picture,
                 description,
                 averageRating,
                 ratings,
+                popularity,
                 price,
                 createdAt,
                 available,
-                recommend,
+                recommended,
                 cuisine,
-                orderItems);
+                orderItems
+        );
     }
 
     @Override
@@ -233,13 +269,15 @@ public class Food {
         return "Food{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", picture='" + picture + '\'' +
                 ", description='" + description + '\'' +
                 ", averageRating=" + averageRating +
                 ", ratings=" + ratings +
+                ", popularity=" + popularity +
                 ", price=" + price +
                 ", createdAt=" + createdAt +
                 ", available=" + available +
-                ", recommended=" + recommend +
+                ", recommended=" + recommended +
                 ", cuisine=" + cuisine +
                 ", orderItems=" + orderItems +
                 '}';
