@@ -22,14 +22,14 @@ public class RatingService {
         return (ratingValue.compareTo(5.0) <= 0) && (ratingValue.compareTo(0.0) >= 0);
     }
 
-    public void saveRating(Food food, String username, Double ratingValue) throws ValueOutOfRangeException {
+    public void saveRating(Food food, Long userId, Double ratingValue) throws ValueOutOfRangeException {
         if (!isRatingValueValid(ratingValue)) {
             throw new ValueOutOfRangeException("Value of rating value is out of range: " + 0 + " to " + 5);
         }
 
         Rating rating = new Rating(
                 food,
-                username,
+                userId,
                 ratingValue
         );
 
