@@ -8,6 +8,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -16,6 +17,30 @@ import java.util.HashMap;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<?> handleAccessDeniedException(
+            AccessDeniedException e
+    ) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
+                .singletonMap("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<?> handleMissingServletRequestParameterException(
+            MissingServletRequestParameterException e
+    ) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                .singletonMap("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<?> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException exception
+    ) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                .singletonMap("error", "Missing body"));
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleMethodArgumentNotValidException(
@@ -32,22 +57,6 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
                 .singletonMap("error", errors));
-    }
-
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<?> handleHttpMessageNotReadableException(
-            HttpMessageNotReadableException exception
-    ) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                .singletonMap("error", "Missing body"));
-    }
-
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<?> handleAccessDeniedException(
-            AccessDeniedException e
-    ) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
-                .singletonMap("error", e.getMessage()));
     }
 
     @ExceptionHandler(UserNotFoundException.class)
