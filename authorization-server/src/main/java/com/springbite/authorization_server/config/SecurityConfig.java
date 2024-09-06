@@ -124,7 +124,7 @@ public class SecurityConfig {
         http.authenticationProvider(authenticationProvider);
 
         http.authorizeHttpRequests(
-                c -> c.requestMatchers("/login", "/csrf", "/signup/**", "/auth/**", "/emails/**",
+                c -> c.requestMatchers("/login", "/csrf", "/signup/**", "/auth/**", "/email/**",
                                 "/forgot-password", "/verify-code", "/rest-password").permitAll()
                         .anyRequest().authenticated()
         );
