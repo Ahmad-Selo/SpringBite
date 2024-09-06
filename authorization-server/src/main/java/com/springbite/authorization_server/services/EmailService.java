@@ -9,7 +9,6 @@ import com.springbite.authorization_server.models.User;
 import com.springbite.authorization_server.models.dtos.SendEmailCodeRequest;
 import com.springbite.authorization_server.repositories.ConfirmationCodeRepository;
 import com.springbite.authorization_server.repositories.UserRepository;
-import com.springbite.authorization_server.security.SecurityContextService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletRequest;

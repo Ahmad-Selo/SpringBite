@@ -8,7 +8,6 @@ import com.springbite.authorization_server.models.dtos.UserDto;
 import com.springbite.authorization_server.models.dtos.UserResponseDto;
 import com.springbite.authorization_server.repositories.UserRepository;
 import com.springbite.authorization_server.security.PasswordGenerator;
-import com.springbite.authorization_server.security.SecurityContextService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

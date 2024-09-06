@@ -1,4 +1,4 @@
-package com.springbite.authorization_server.security;
+package com.springbite.authorization_server.services;
 
 import com.springbite.authorization_server.models.SecurityUser;
 import jakarta.servlet.http.HttpServletRequest;
