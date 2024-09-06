@@ -1,5 +1,6 @@
 package com.springbite.authorization_server.controllers;
 
+import com.springbite.authorization_server.exceptions.UserNotFoundException;
 import com.springbite.authorization_server.models.dtos.ChangePasswordRequest;
 import com.springbite.authorization_server.models.dtos.DeleteUserRequest;
 import com.springbite.authorization_server.models.dtos.PromoteRequest;
@@ -25,7 +26,7 @@ public class UserController {
     @RequireOwnership
     public ResponseEntity<?> getUser(
             @PathVariable("user-id") Long userId
-    ) {
+    ) throws UserNotFoundException {
         return userService.getUser(userId);
     }
 
@@ -43,7 +44,7 @@ public class UserController {
     public ResponseEntity<?> promoteUser(
             @PathVariable("user-id") Long userId,
             @Valid @RequestBody PromoteRequest promoteRequest
-    ) {
+    ) throws UserNotFoundException {
         return userService.promoteUser(userId, promoteRequest);
     }
 
@@ -52,7 +53,7 @@ public class UserController {
     public ResponseEntity<?> changePassword(
             @PathVariable("user-id") Long userId,
             @Valid @RequestBody ChangePasswordRequest changePasswordRequest
-    ) {
+    ) throws UserNotFoundException {
         return userService.changePassword(userId, changePasswordRequest);
     }
 
@@ -61,7 +62,7 @@ public class UserController {
     public ResponseEntity<?> updateUser(
             @PathVariable("user-id") Long userId,
             @Valid @RequestBody UpdateUserRequest updateUserRequest
-    ) {
+    ) throws UserNotFoundException {
         return userService.updateUser(userId, updateUserRequest);
     }
 
@@ -70,7 +71,7 @@ public class UserController {
     public ResponseEntity<?> deleteUser(
             @PathVariable("user-id") Long userId,
             @Valid @RequestBody DeleteUserRequest deleteUserRequest
-    ) {
+    ) throws UserNotFoundException {
         return userService.deleteUser(userId, deleteUserRequest);
     }
 }

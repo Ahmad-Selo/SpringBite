@@ -60,16 +60,10 @@ public class EmailService {
         this.securityContextService = securityContextService;
     }
 
-    public ResponseEntity<?> sendEmailCode(SendEmailCodeRequest sendEmailCodeRequest) {
-        User user;
-
-        try {
-            user = userRepository.findByUsername(sendEmailCodeRequest.getUsername())
-                    .orElseThrow(() -> new UsernameNotFoundException("Username not found."));
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
+    public ResponseEntity<?> sendEmailCode(SendEmailCodeRequest sendEmailCodeRequest)
+            throws MessagingException {
+        User user = userRepository.findByUsername(sendEmailCodeRequest.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("Username not found."));
 
         if (user.isEmailVerified()) {
             return ResponseEntity.status(HttpStatus.OK).body(Collections
@@ -92,12 +86,7 @@ public class EmailService {
 
         ConfirmationCode confirmationCode = new ConfirmationCode(user);
 
-        try {
-            sendConfirmationEmail(user.getUsername(), user.getFirstname(), confirmationCode.getCode());
-        } catch (MessagingException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", "Failed to send confirmation email."));
-        }
+        sendConfirmationEmail(user.getUsername(), user.getFirstname(), confirmationCode.getCode());
 
         confirmationCodeRepository.save(confirmationCode);
 
@@ -105,18 +94,12 @@ public class EmailService {
                 .singletonMap("message", "A confirmation email has been sent."));
     }
 
-    public ResponseEntity<?> confirmEmail(String code, HttpServletRequest request) {
-        ConfirmationCode confirmationCode;
+    public ResponseEntity<?> confirmEmail(String code, HttpServletRequest request)
+            throws CodeInvalidException, CodeExpiredException {
+        ConfirmationCode confirmationCode = confirmationCodeRepository.findByCode(code)
+                .orElseThrow(() -> new CodeInvalidException("Invalid code."));
 
-        try {
-            confirmationCode = confirmationCodeRepository.findByCode(code)
-                    .orElseThrow(() -> new CodeInvalidException("Invalid code."));
-
-            confirmationCode.validateCode();
-        } catch (CodeInvalidException | CodeExpiredException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
+        confirmationCode.validateCode();
 
         User user = confirmationCode.getUser();
 

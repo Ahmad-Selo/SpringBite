@@ -2,7 +2,10 @@ package com.springbite.authorization_server.services;
 
 import com.springbite.authorization_server.entities.PasswordResetCode;
 import com.springbite.authorization_server.entities.PasswordResetToken;
-import com.springbite.authorization_server.exceptions.*;
+import com.springbite.authorization_server.exceptions.CodeExpiredException;
+import com.springbite.authorization_server.exceptions.CodeInvalidException;
+import com.springbite.authorization_server.exceptions.TokenExpiredException;
+import com.springbite.authorization_server.exceptions.TokenInvalidException;
 import com.springbite.authorization_server.models.User;
 import com.springbite.authorization_server.models.dtos.PasswordForgotRequest;
 import com.springbite.authorization_server.models.dtos.PasswordResetRequest;
@@ -13,6 +16,7 @@ import jakarta.mail.MessagingException;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -49,17 +53,11 @@ public class PasswordRecoveryService {
         this.emailService = emailService;
     }
 
-    public ResponseEntity<?> forgotPassword(PasswordForgotRequest passwordForgotRequest) {
+    public ResponseEntity<?> forgotPassword(PasswordForgotRequest passwordForgotRequest) throws MessagingException {
         String username = passwordForgotRequest.getUsername();
-        User user;
 
-        try {
-            user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new UserNotFoundException("No user with this email exist."));
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Username not found."));
 
         Sort sort = Sort.by(Sort.Direction.ASC, "createdAt");
         List<PasswordResetCode> userPasswordResetCodes = passwordResetCodeRepository.findByUser(user, sort)
@@ -70,19 +68,14 @@ public class PasswordRecoveryService {
                     .singletonMap("message", "You have reached your daily limit for reset code requests. You can try again tomorrow or get in touch with our support team if you need immediate help."));
         }
 
-        if(!userPasswordResetCodes.isEmpty() && userPasswordResetCodes.getLast().getExpiresAt().getTime() > System.currentTimeMillis()) {
+        if (!userPasswordResetCodes.isEmpty() && userPasswordResetCodes.getLast().getExpiresAt().getTime() > System.currentTimeMillis()) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Collections
                     .singletonMap("message", "You've recently requested a reset code. Please wait 15 minutes from your last request before trying again. If you continue to experience issues, feel free to contact our support team for assistance."));
         }
 
         PasswordResetCode passwordResetCode = new PasswordResetCode(user);
 
-        try {
-            emailService.sendResetPasswordEmail(username, user.getFirstname(), passwordResetCode.getCode());
-        } catch (MessagingException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", "Failed to send password reset email."));
-        }
+        emailService.sendResetPasswordEmail(username, user.getFirstname(), passwordResetCode.getCode());
 
         passwordResetCodeRepository.save(passwordResetCode);
 
@@ -90,18 +83,11 @@ public class PasswordRecoveryService {
                 .singletonMap("message", "Password reset instruction have been sent to your email."));
     }
 
-    public ResponseEntity<?> verifyCode(String code) {
-        PasswordResetCode passwordResetCode;
+    public ResponseEntity<?> verifyCode(String code) throws CodeInvalidException, CodeExpiredException {
+        PasswordResetCode passwordResetCode = passwordResetCodeRepository.findByCode(code)
+                .orElseThrow(() -> new CodeInvalidException("Invalid code."));
 
-        try {
-            passwordResetCode = passwordResetCodeRepository.findByCode(code)
-                    .orElseThrow(() -> new CodeInvalidException("Invalid code."));
-
-            passwordResetCode.validateCode();
-        } catch (CodeInvalidException | CodeExpiredException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
+        passwordResetCode.validateCode();
 
         passwordResetCode.setExpired(true);
 
@@ -124,18 +110,11 @@ public class PasswordRecoveryService {
     public ResponseEntity<?> resetPassword(
             String token,
             PasswordResetRequest passwordResetRequest
-    ) {
-        PasswordResetToken passwordResetToken;
+    ) throws TokenInvalidException, TokenExpiredException {
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new TokenInvalidException("Invalid token."));
 
-        try {
-            passwordResetToken = passwordResetTokenRepository.findByToken(token)
-                    .orElseThrow(() -> new TokenInvalidException("Invalid token."));
-
-            passwordResetToken.validateToken();
-        } catch (TokenInvalidException | TokenExpiredException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
+        passwordResetToken.validateToken();
 
         User user = passwordResetToken.getPasswordResetCode().getUser();
 

@@ -1,7 +1,10 @@
 package com.springbite.authorization_server.controllers;
 
+import com.springbite.authorization_server.exceptions.CodeExpiredException;
+import com.springbite.authorization_server.exceptions.CodeInvalidException;
 import com.springbite.authorization_server.models.dtos.SendEmailCodeRequest;
 import com.springbite.authorization_server.services.EmailService;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +23,7 @@ public class EmailController {
     @PostMapping("/send-code")
     public ResponseEntity<?> sendEmailCode(
             @Valid @RequestBody SendEmailCodeRequest sendEmailCodeRequest
-    ) {
+    ) throws MessagingException {
         return emailService.sendEmailCode(sendEmailCodeRequest);
     }
 
@@ -28,7 +31,7 @@ public class EmailController {
     public ResponseEntity<?> confirmEmail(
             @RequestParam("code") String code,
             HttpServletRequest request
-    ) {
+    ) throws CodeExpiredException, CodeInvalidException {
         return emailService.confirmEmail(code, request);
     }
 }

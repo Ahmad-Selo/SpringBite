@@ -1,5 +1,7 @@
 package com.springbite.authorization_server.handlers;
 
+import com.springbite.authorization_server.exceptions.*;
+import jakarta.mail.MessagingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -45,6 +47,54 @@ public class GlobalExceptionHandler {
             AccessDeniedException e
     ) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
+                .singletonMap("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<?> handleUserNotFoundException(
+            UserNotFoundException e
+    ) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                .singletonMap("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(MessagingException.class)
+    public ResponseEntity<?> handleMessagingException(
+            MessagingException e
+    ) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
+                .singletonMap("error", "Failed to send email."));
+    }
+
+    @ExceptionHandler(CodeInvalidException.class)
+    public ResponseEntity<?> handleCodeInvalidException(
+            CodeInvalidException e
+    ) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections
+                .singletonMap("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(CodeExpiredException.class)
+    public ResponseEntity<?> handleCodeExpiredException(
+            CodeExpiredException e
+    ) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections
+                .singletonMap("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(TokenInvalidException.class)
+    public ResponseEntity<?> handleTokenInvalidException(
+            TokenInvalidException e
+    ) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections
+                .singletonMap("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(TokenExpiredException.class)
+    public ResponseEntity<?> handleTokenExpiredException(
+            TokenExpiredException e
+    ) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections
                 .singletonMap("error", e.getMessage()));
     }
 }

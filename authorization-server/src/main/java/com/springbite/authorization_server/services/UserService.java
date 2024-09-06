@@ -8,7 +8,6 @@ import com.springbite.authorization_server.repositories.UserRepository;
 import com.springbite.authorization_server.security.Role;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -36,16 +35,9 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public ResponseEntity<?> getUser(Long userId) {
-        User user;
-
-        try {
-            user = userRepository.findById(userId)
+    public ResponseEntity<?> getUser(Long userId) throws UserNotFoundException {
+        User user = userRepository.findById(userId)
                     .orElseThrow(() -> new UserNotFoundException("User not found."));
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
 
         UserResponseDto userResponseDto = userMapper.userToUserResponseDto(user);
 
@@ -68,20 +60,14 @@ public class UserService {
                     .map(userMapper::userToUserPromoteResponse)
                     .collect(Collectors.toList());
         }
+
         return ResponseEntity.status(HttpStatus.OK).body(users);
 
     }
 
-    public ResponseEntity<?> promoteUser(Long userId, PromoteRequest promoteRequest) {
-        User user;
-
-        try {
-            user = userRepository.findById(userId)
+    public ResponseEntity<?> promoteUser(Long userId, PromoteRequest promoteRequest) throws UserNotFoundException {
+        User user = userRepository.findById(userId)
                     .orElseThrow(() -> new UserNotFoundException("User not found."));
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
 
         Role role = Role.valueOf("ROLE_" + promoteRequest.getRole());
 
@@ -93,16 +79,10 @@ public class UserService {
                 .singletonMap("message", "The user has been successfully promoted to the new role."));
     }
 
-    public ResponseEntity<?> changePassword(Long userId, ChangePasswordRequest changePasswordRequest) {
-        User user;
-
-        try {
-            user = userRepository.findById(userId)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found."));
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
+    public ResponseEntity<?> changePassword(Long userId, ChangePasswordRequest changePasswordRequest)
+            throws UserNotFoundException {
+        User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundException("User not found."));
 
         if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
@@ -122,17 +102,10 @@ public class UserService {
                 .singletonMap("message", "Password have been changed successfully."));
     }
 
-    public ResponseEntity<?> updateUser(Long userId, UpdateUserRequest updateUserRequest) {
-        User user;
-
-        try {
-            user = userRepository.findById(userId)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found."));
-
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
+    public ResponseEntity<?> updateUser(Long userId, UpdateUserRequest updateUserRequest)
+            throws UserNotFoundException {
+        User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundException("User not found."));
 
         String username = updateUserRequest.getUsername();
         String firstname = updateUserRequest.getFirstname();
@@ -162,17 +135,10 @@ public class UserService {
         return ResponseEntity.status(HttpStatus.OK).body(userResponseDto);
     }
 
-    public ResponseEntity<?> deleteUser(Long userId, DeleteUserRequest deleteUserRequest) {
-        User user;
-
-        try {
-            user = userRepository.findById(userId)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found."));
-
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections
-                    .singletonMap("error", e.getMessage()));
-        }
+    public ResponseEntity<?> deleteUser(Long userId, DeleteUserRequest deleteUserRequest)
+            throws UserNotFoundException {
+        User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundException("User not found."));
 
         if (!passwordEncoder.matches(deleteUserRequest.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections
