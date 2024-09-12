@@ -7,13 +7,14 @@ import com.springbite.authorization_server.entities.PasswordResetCode;
 import com.springbite.authorization_server.security.Role;
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
 @Entity
 @Table(name = "users")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class User {
+public class User implements Serializable {
 
     @Id
     @GeneratedValue

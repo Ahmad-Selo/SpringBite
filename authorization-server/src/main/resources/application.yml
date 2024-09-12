@@ -2,6 +2,11 @@ server:
   address: 10.66.66.9
 
 spring:
+  session:
+    store:
+      type: jdbc
+    jdbc:
+      table-name: SESSIONS
   datasource:
     url: jdbc:postgresql://localhost:5432/springbite_authorization_db
     username: postgres
