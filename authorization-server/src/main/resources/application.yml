@@ -1,0 +1,68 @@
+server:
+  address: 10.66.66.9
+  servlet:
+    session:
+      timeout: 3m
+
+spring:
+  config:
+    import: secrets.yml
+  session:
+    store:
+      type: jdbc
+    jdbc:
+      table-name: SESSIONS
+  datasource:
+    url: ${db.url}
+    username: ${db.username}
+    password: ${db.password}
+  jpa:
+    hibernate:
+      ddl-auto: update
+  mail:
+    host: ${mail.host}
+    port: ${mail.port}
+    username: ${mail.username}
+    password: ${mail.password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+
+com:
+  nimbusds:
+    jose:
+      jwk:
+        source:
+          RemoteJWKSet:
+            defaultHttpConnectTimeout: 5000
+            defaultHttpReadTimeout: 2500
+            defaultHttpSizeLimit: 100000
+
+jwk:
+  kid: 028577b6-e16b-47f2-a562-27b55cc79695
+
+trusted:
+  issuers:
+    - https://accounts.google.com
+  clients:
+    - 622455662282-vfr0an7e1hdunsifk1vke9duun486pfi.apps.googleusercontent.com
+
+mail:
+  from: contact@springbite.com
+  support: support@springbite.com
+
+website:
+  url: https://www.springbite.com
+
+provider:
+  google:
+    jwk_set_uri: https://www.googleapis.com/oauth2/v3/certs
+    issuer: https://accounts.google.com
+    aud: ${provider.google.aud}
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
