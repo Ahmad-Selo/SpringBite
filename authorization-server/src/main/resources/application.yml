@@ -42,12 +42,6 @@ com:
 jwk:
   kid: 028577b6-e16b-47f2-a562-27b55cc79695
 
-trusted:
-  issuers:
-    - https://accounts.google.com
-  clients:
-    - 622455662282-vfr0an7e1hdunsifk1vke9duun486pfi.apps.googleusercontent.com
-
 mail:
   from: contact@springbite.com
   support: support@springbite.com
