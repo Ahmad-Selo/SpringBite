@@ -6,8 +6,6 @@ public interface Provider {
 
     String PATTERN = "^/auth/(google)$";
 
-    String GOOGLE = "google";
-
     JwtDecoder jwtDecoder();
 
 }
