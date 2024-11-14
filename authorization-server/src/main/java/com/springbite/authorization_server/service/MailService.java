@@ -4,6 +4,7 @@ import com.springbite.authorization_server.entity.User;
 import com.springbite.authorization_server.entity.VerificationCode;
 import com.springbite.authorization_server.exception.CodeExpiredException;
 import com.springbite.authorization_server.exception.CodeInvalidException;
+import com.springbite.authorization_server.exception.UserNotFoundException;
 import com.springbite.authorization_server.model.dto.SendEmailCodeRequestDTO;
 import com.springbite.authorization_server.repository.ConfirmationCodeRepository;
 import com.springbite.authorization_server.repository.UserRepository;
@@ -17,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -45,7 +45,7 @@ public class MailService {
     public ResponseEntity<?> sendEmailCode(SendEmailCodeRequestDTO sendEmailCodeRequestDTO)
             throws MessagingException {
         User user = userRepository.findByUsername(sendEmailCodeRequestDTO.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
+                .orElseThrow(() -> new UserNotFoundException("Username not found"));
 
         if (user.isEmailVerified()) {
             return ResponseEntity.status(HttpStatus.OK).body(Collections
