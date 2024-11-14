@@ -1,5 +1,6 @@
 package com.springbite.authorization_server.model.dto;
 
+import com.springbite.authorization_server.entity.User;
 import com.springbite.authorization_server.validation.constraint.Unique;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -18,7 +19,7 @@ public class UserRequestDTO {
 
     @Email(regexp = EMAIL_REGEX)
     @NotBlank
-    @Unique(table = "User", column = "username", message = "invalid username")
+    @Unique(table = User.class, column = "username", message = "invalid username")
     private String username;
 
     @NotBlank
@@ -35,7 +36,7 @@ public class UserRequestDTO {
 
     @NotBlank
     @Length(min = 10, max = 10)
-    @Unique(table = "User", column = "phoneNumber", message = "invalid phone number")
+    @Unique(table = User.class, column = "phoneNumber", message = "invalid phone number")
     private String phoneNumber;
 
     @NotBlank
@@ -56,11 +57,11 @@ public class UserRequestDTO {
         this.picture = picture;
     }
 
-    public @Email(regexp = EMAIL_REGEX) @NotBlank @Unique(table = "User", column = "username", message = "invalid username") String getUsername() {
+    public @Email(regexp = EMAIL_REGEX) @NotBlank @Unique(table = User.class, column = "username", message = "invalid username") String getUsername() {
         return username;
     }
 
-    public void setUsername(@Email(regexp = EMAIL_REGEX) @NotBlank @Unique(table = "User", column = "username", message = "invalid username") String username) {
+    public void setUsername(@Email(regexp = EMAIL_REGEX) @NotBlank @Unique(table = User.class, column = "username", message = "invalid username") String username) {
         this.username = username;
     }
 
@@ -88,11 +89,11 @@ public class UserRequestDTO {
         this.lastname = lastname;
     }
 
-    public @NotBlank @Length(min = 10, max = 10) @Unique(table = "User", column = "phoneNumber", message = "invalid phone number") String getPhoneNumber() {
+    public @NotBlank @Length(min = 10, max = 10) @Unique(table = User.class, column = "phoneNumber", message = "invalid phone number") String getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(@NotBlank @Length(min = 10, max = 10) @Unique(table = "User", column = "phoneNumber", message = "invalid phone number") String phoneNumber) {
+    public void setPhoneNumber(@NotBlank @Length(min = 10, max = 10) @Unique(table = User.class, column = "phoneNumber", message = "invalid phone number") String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 

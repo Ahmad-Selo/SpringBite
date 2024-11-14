@@ -22,7 +22,7 @@ public class ExistsValidator implements ConstraintValidator<Exists, String> {
 
     @Override
     public void initialize(Exists constraintAnnotation) {
-        this.table = constraintAnnotation.table();
+        this.table = constraintAnnotation.table().getSimpleName();
         this.column = constraintAnnotation.column();
     }
 

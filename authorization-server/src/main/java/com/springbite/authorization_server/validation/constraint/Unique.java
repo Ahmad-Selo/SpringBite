@@ -27,7 +27,7 @@ public @interface Unique {
 
     Class<? extends Payload>[] payload() default {};
 
-    String table();
+    Class<?> table();
 
     String column();
 }

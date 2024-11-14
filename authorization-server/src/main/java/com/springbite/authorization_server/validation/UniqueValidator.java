@@ -22,7 +22,7 @@ public class UniqueValidator implements ConstraintValidator<Unique, String> {
 
     @Override
     public void initialize(Unique constraintAnnotation) {
-        this.table = constraintAnnotation.table();
+        this.table = constraintAnnotation.table().getSimpleName();
         this.column = constraintAnnotation.column();
     }
 

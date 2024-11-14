@@ -3,10 +3,7 @@ package com.springbite.authorization_server.service;
 import com.springbite.authorization_server.entity.PasswordResetCode;
 import com.springbite.authorization_server.entity.PasswordResetToken;
 import com.springbite.authorization_server.entity.User;
-import com.springbite.authorization_server.exception.CodeExpiredException;
-import com.springbite.authorization_server.exception.CodeInvalidException;
-import com.springbite.authorization_server.exception.TokenExpiredException;
-import com.springbite.authorization_server.exception.TokenInvalidException;
+import com.springbite.authorization_server.exception.*;
 import com.springbite.authorization_server.model.dto.PasswordForgotRequestDTO;
 import com.springbite.authorization_server.model.dto.PasswordResetRequestDTO;
 import com.springbite.authorization_server.repository.PasswordResetCodeRepository;
@@ -45,7 +42,7 @@ public class PasswordRecoveryService {
         String username = passwordForgotRequestDTO.getUsername();
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Username not found."));
+                .orElseThrow(() -> new UserNotFoundException("Username not found."));
 
         Sort sort = Sort.by(Sort.Direction.ASC, "createdAt");
         List<PasswordResetCode> userPasswordResetCodes = passwordResetCodeRepository.findByUser(user, sort)

@@ -1,5 +1,6 @@
 package com.springbite.authorization_server.model.dto;
 
+import com.springbite.authorization_server.entity.User;
 import com.springbite.authorization_server.validation.constraint.Exists;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -17,14 +18,14 @@ public class SendEmailCodeRequestDTO {
 
     @NotBlank
     @Email(regexp = EMAIL_REGEX)
-    @Exists(table = "User", column = "username", message = "invalid username")
+    @Exists(table = User.class, column = "username", message = "invalid username")
     private String username;
 
-    public @NotBlank @Email(regexp = EMAIL_REGEX) @Exists(table = "User", column = "username", message = "invalid username") String getUsername() {
+    public @NotBlank @Email(regexp = EMAIL_REGEX) @Exists(table = User.class, column = "username", message = "invalid username") String getUsername() {
         return username;
     }
 
-    public void setUsername(@NotBlank @Email(regexp = EMAIL_REGEX) @Exists(table = "User", column = "username", message = "invalid username") String username) {
+    public void setUsername(@NotBlank @Email(regexp = EMAIL_REGEX) @Exists(table = User.class, column = "username", message = "invalid username") String username) {
         this.username = username;
     }
 }
