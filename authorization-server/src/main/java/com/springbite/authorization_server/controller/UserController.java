@@ -7,7 +7,6 @@ import com.springbite.authorization_server.model.dto.PromoteRequestDTO;
 import com.springbite.authorization_server.model.dto.UpdateUserRequestDTO;
 import com.springbite.authorization_server.security.HasRole;
 import com.springbite.authorization_server.security.RequireOwnership;
-import com.springbite.authorization_server.security.authentication.CustomAuthentication;
 import com.springbite.authorization_server.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +27,8 @@ public class UserController {
     @GetMapping("/{user-id}")
     @RequireOwnership
     public ResponseEntity<?> getUser(
-            @PathVariable("user-id") Long userId,
-            CustomAuthentication customAuthentication
+            @PathVariable("user-id") Long userId
     ) throws UserNotFoundException {
-        logger.info(customAuthentication.getTokenAttributes());
         return userService.getUser(userId);
     }
 
