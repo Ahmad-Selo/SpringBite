@@ -26,7 +26,7 @@ public class JwtAuthenticationConverter implements Converter<Jwt, CustomAuthenti
     public CustomAuthentication convert(Jwt source) {
         List<GrantedAuthority> authorities = extractAuthorities(source);
 
-        Long userId = (Long) source.getClaims().get("uid");
+        Long userId = source.getClaim("uid");
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found."));
@@ -37,7 +37,7 @@ public class JwtAuthenticationConverter implements Converter<Jwt, CustomAuthenti
     }
 
     private List<GrantedAuthority> extractAuthorities(Jwt source) {
-        Collection<String> authorities = (Collection<String>) source.getClaims().get("authorities");
+        Collection<String> authorities = source.getClaim("authorities");
 
         return authorities.stream()
                 .map(SimpleGrantedAuthority::new)
